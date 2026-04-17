@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>有啥好吃的?</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.tailwind = window.tailwind || {};
+        window.tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        serif: ['"Noto Serif TC"', 'serif'],
+                    },
+                    colors: {
+                        app: { bg: '#0a0a0a', surface: '#121212', gold: '#D4AF37', 'gold-light': '#F3E5AB' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html, body { max-width: 100vw; overflow-x: hidden; background-color: #0a0a0a; }
+        .no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+        .no-scrollbar::-webkit-scrollbar { display: none !important; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #D4AF37; cursor: pointer; margin-top: -9px; box-shadow: 0 0 10px rgba(212,175,55,0.3); border: 2px solid #0a0a0a; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 2px; cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 1px; }
+        .quote-bg { position: relative; }
+        .quote-bg::before { content: '"'; position: absolute; top: -10px; left: -5px; font-size: 3rem; font-family: serif; color: rgba(212,175,55,0.15); line-height: 1; }
+        .mock-map-bg { background-color: #0a0a0a; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 20px 20px; }
+        body { color: #e5e5e5; }
+        .meal-btn, .budget-btn, .vibe-btn { transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s; }
+    </style>
+</head>
+<body class="font-sans w-full h-screen flex flex-col select-none relative">
+
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-[-10%] left-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-amber-900/10 rounded-full blur-[80px]"></div>
+        <div class="absolute bottom-[-5%] right-[-5%] w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] bg-stone-800/30 rounded-full blur-[60px]"></div>
+    </div>
+
+    <header class="bg-app-bg/60 backdrop-blur-2xl px-4 sm:px-6 py-4 flex justify-between items-center z-20 sticky top-0 shrink-0 border-b border-white/5 w-full gap-2">
+        <div class="flex items-center min-w-0 flex-1">
+            <h1 id="app-top-title" class="text-lg sm:text-xl font-serif font-bold text-white tracking-widest truncate">有啥好吃的?</h1>
+        </div>
+        <div id="header-location" class="hidden items-center gap-1.5 text-[10px] px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/70 font-medium max-w-[150px] backdrop-blur-md shrink-0">
+            <i data-lucide="map-pin" class="w-3 h-3 flex-shrink-0 text-app-gold"></i>
+            <span id="header-location-text" class="truncate font-serif">定位中...</span>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full z-10" id="main-scroll-area">
+
+        <!-- 步驟一：設定條件 -->
+        <div id="step-setup" class="p-6 pb-32 space-y-8 max-w-lg mx-auto">
+            <div class="mt-4 mb-8">
+                <h2 id="main-greeting" class="text-2xl sm:text-3xl font-serif font-bold text-white mb-2 tracking-widest leading-tight transition-opacity duration-500">尋找<br><span class="text-app-gold">極致美味</span>。</h2>
+                <p id="sub-greeting" class="text-white/40 text-xs sm:text-sm font-light tracking-wider transition-opacity duration-500">為您的夜晚，訂製專屬菜單</p>
+            </div>
+
+            <div class="space-y-8">
+                <!-- 地點 -->
+                <div class="space-y-3">
+                    <label class="text-[10px] font-medium tracking-widest text-white/50 uppercase flex items-center gap-2">
+                        <i data-lucide="compass" class="w-3 h-3 text-app-gold"></i> Location
+                    </label>
+                    <div id="location-display-area" class="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 flex items-center justify-between cursor-pointer hover:bg-white/10 transition-all backdrop-blur-md">
+                        <div class="flex items-center gap-3 text-white/80 min-w-0">
+                            <i data-lucide="loader-2" id="auto-locating-icon" class="w-4 h-4 animate-spin text-app-gold shrink-0"></i>
+                            <i data-lucide="map-pin" id="auto-located-icon" class="w-4 h-4 hidden text-app-gold shrink-0"></i>
+                            <span id="location-display-text" class="font-serif tracking-wider text-sm truncate">定位中...</span>
+                        </div>
+                        <i data-lucide="pen-line" class="w-4 h-4 text-white/30 shrink-0"></i>
+                    </div>
+                    <div id="location-input-area" class="hidden flex gap-2">
+                        <input type="text" id="location-input" placeholder="輸入想去的城市或區域" class="w-full bg-black/50 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-app-gold outline-none text-white font-serif">
+                        <button id="re-gps-btn" class="bg-white/5 text-white/70 p-4 rounded-2xl border border-white/10 active:scale-95 transition-all flex-shrink-0">
+                            <i data-lucide="crosshair" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p id="location-warning" class="hidden text-rose-400 text-xs tracking-wider">請先設定地點</p>
+                </div>
+
+                <!-- 時段 -->
+                <div class="space-y-3 w-full">
+                    <label class="text-[10px] font-medium tracking-widest text-white/50 uppercase flex items-center gap-2">
+                        <i data-lucide="clock" class="w-3 h-3 text-app-gold"></i> Time
+                    </label>
+                    <div class="grid grid-cols-3 gap-2 w-full" id="meal-options">
+                        <button class="meal-btn py-2.5 rounded-full text-[10px] font-medium tracking-widest transition-all border border-white/10 text-white/50 bg-white/5" data-meal="breakfast">早餐</button>
+                        <button class="meal-btn py-2.5 rounded-full text-[10px] font-medium tracking-widest transition-all border border-white/10 text-white/50 bg-white/5" data-meal="brunch">早午餐</button>
+                        <button class="meal-btn py-2.5 rounded-full text-[10px] font-medium tracking-widest transition-all border border-white/10 text-white/50 bg-white/5" data-meal="lunch">午餐</button>
+                        <button class="meal-btn py-2.5 rounded-full text-[10px] font-medium tracking-widest transition-all border border-white/10 text-white/50 bg-white/5" data-meal="tea">午茶</button>
+                        <button class="meal-btn py-2.5 rounded-full text-[10px] font-medium tracking-widest transition-all border border-white/10 text-white/50 bg-white/5" data-meal="dinner">晚餐</button>
+                        <button class="meal-btn py-2.5 rounded-full text-[10px] font-medium tracking-widest transition-all border border-white/10 text-white/50 bg-white/5" data-meal="latenight">宵夜</button>
+                    </div>
+                </div>
+
+                <!-- 預算 -->
+                <div class="space-y-3">
+                    <label class="text-[10px] font-medium tracking-widest text-white/50 uppercase flex items-center gap-2">
+                        <i data-lucide="circle-dollar-sign" class="w-3 h-3 text-app-gold"></i> Budget
+                    </label>
+                    <div class="flex gap-2 bg-white/5 p-1 rounded-2xl border border-white/5 backdrop-blur-sm">
+                        <button class="budget-btn flex-1 py-3 rounded-xl text-[10px] font-medium tracking-widest transition-all text-white/40 border border-transparent" data-val="$">日常便飯</button>
+                        <button class="budget-btn flex-1 py-3 rounded-xl text-[10px] font-medium tracking-widest transition-all text-white/40 border border-transparent" data-val="$$">精緻享受</button>
+                        <button class="budget-btn flex-1 py-3 rounded-xl text-[10px] font-medium tracking-widest transition-all text-white/40 border border-transparent" data-val="$$$">奢華饗宴</button>
+                    </div>
+                </div>
+
+                <!-- 人數 -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <label class="text-[10px] font-medium tracking-widest text-white/50 uppercase flex items-center gap-2">
+                            <i data-lucide="users" class="w-3 h-3 text-app-gold"></i> Guests
+                        </label>
+                        <span id="people-count-display" class="text-sm font-serif font-bold text-white tracking-widest">2 人</span>
+                    </div>
+                    <div class="px-2"><input type="range" id="people-slider" min="1" max="10" value="2"></div>
+                </div>
+
+                <!-- 氣氛 -->
+                <div class="space-y-3">
+                    <label class="text-[10px] font-medium tracking-widest text-white/50 uppercase flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-3 h-3 text-app-gold"></i> Vibe
+                    </label>
+                    <div class="grid grid-cols-2 gap-2" id="vibe-options">
+                        <button class="vibe-btn flex items-center justify-center gap-2 border border-white/5 bg-white/5 text-white/50 rounded-xl py-3 text-[10px] font-medium" data-vibe="casual"><i data-lucide="coffee" class="w-3.5 h-3.5"></i>輕鬆</button>
+                        <button class="vibe-btn flex items-center justify-center gap-2 border border-white/5 bg-white/5 text-white/50 rounded-xl py-3 text-[10px] font-medium" data-vibe="date"><i data-lucide="wine" class="w-3.5 h-3.5"></i>浪漫</button>
+                        <button class="vibe-btn flex items-center justify-center gap-2 border border-white/5 bg-white/5 text-white/50 rounded-xl py-3 text-[10px] font-medium" data-vibe="party"><i data-lucide="glass-water" class="w-3.5 h-3.5"></i>歡聚</button>
+                        <button class="vibe-btn flex items-center justify-center gap-2 border border-white/5 bg-white/5 text-white/50 rounded-xl py-3 text-[10px] font-medium" data-vibe="work"><i data-lucide="laptop-2" class="w-3.5 h-3.5"></i>靜心</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 mt-8 pb-10">
+                <button id="find-btn" class="w-full bg-white text-black font-serif font-bold text-sm tracking-[0.2em] py-4 rounded-xl active:scale-[0.98] transition-all flex justify-center items-center gap-3 uppercase">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i> AI 智慧探索
+                </button>
+                <div id="ai-error-msg" class="hidden text-center text-rose-400 text-xs tracking-wider">AI 搜尋遇到問題，請稍後再試</div>
+            </div>
+        </div>
+
+        <!-- 步驟二：載入中 -->
+        <div id="step-loading" class="hidden absolute inset-0 bg-app-bg/80 backdrop-blur-2xl flex flex-col items-center justify-center z-30 px-6 text-center">
+            <div class="w-10 h-10 border-4 border-white/10 border-t-app-gold rounded-full animate-spin mb-6"></div>
+            <p id="loading-text" class="text-white font-serif tracking-[0.2em] text-sm uppercase">AI 正在為您搜尋...</p>
+        </div>
+
+        <!-- 步驟三：推薦結果 -->
+        <div id="step-results" class="hidden p-6 pb-40 space-y-6 max-w-lg mx-auto">
+            <div class="flex justify-between items-center bg-white/5 backdrop-blur-xl p-1.5 rounded-full border border-white/10 mb-4">
+                <div class="flex gap-1 w-full relative">
+                    <div id="view-toggle-bg" class="absolute left-0 top-0 h-full w-1/2 bg-white rounded-full transition-transform duration-300"></div>
+                    <button id="view-list-btn" class="flex-1 py-2.5 text-[10px] font-bold tracking-widest rounded-full text-black z-10 uppercase">List</button>
+                    <button id="view-map-btn" class="flex-1 py-2.5 text-[10px] font-bold tracking-widest rounded-full text-white/50 z-10 uppercase">Map</button>
+                </div>
+            </div>
+            <button id="roulette-btn" class="w-full bg-transparent border border-app-gold/40 text-app-gold font-serif font-medium text-xs tracking-[0.15em] py-4 rounded-xl active:scale-[0.98] transition-all flex justify-center items-center gap-3 uppercase">
+                <i data-lucide="dices" class="w-4 h-4"></i> Random Pick
+            </button>
+            <div id="restaurant-list-view" class="space-y-4 mt-6"></div>
+            <div id="restaurant-map-view" class="hidden mt-6 h-[50vh] rounded-3xl overflow-hidden border border-white/10 shadow-2xl relative mock-map-bg">
+                <div class="absolute inset-0 flex items-center justify-center opacity-5 text-white font-serif text-2xl tracking-[0.5em] rotate-[-10deg]">MAP</div>
+                <div id="map-pins-container" class="absolute inset-0"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部懸浮區 -->
+    <div id="bottom-actions" class="hidden fixed bottom-0 w-full p-5 bg-app-bg/80 backdrop-blur-2xl border-t border-white/10 pb-safe z-30 shrink-0">
+        <div class="flex gap-3 max-w-lg mx-auto">
+            <button id="back-to-setup" class="p-4 bg-white/5 rounded-xl border border-white/10 text-white/60 active:scale-95 transition-all"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i></button>
+            <button id="refresh-btn" class="flex-1 bg-white/5 text-white font-serif text-[10px] tracking-widest py-4 rounded-xl border border-white/10 active:scale-95 transition-all flex justify-center items-center gap-2 uppercase">Shuffle</button>
+            <button id="share-btn" class="flex-1 bg-white text-black font-serif font-bold text-[10px] tracking-widest py-4 rounded-xl active:scale-95 transition-all flex justify-center items-center gap-2 uppercase">Share</button>
+        </div>
+    </div>
+
+    <!-- 大轉盤 Modal -->
+    <div id="roulette-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6 backdrop-blur-xl">
+        <div id="roulette-inner" class="bg-app-surface w-full max-w-xs rounded-3xl p-8 text-center shadow-2xl relative overflow-hidden border border-white/10">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-6 border border-app-gold/30 bg-app-gold/5"><i data-lucide="concierge-bell" class="w-5 h-5 text-app-gold"></i></div>
+            <div class="h-20 flex items-center justify-center mb-8 overflow-hidden border-y border-white/10"><div id="slot-text" class="text-lg font-serif font-bold text-white px-4 tracking-wider">...</div></div>
+            <button id="close-roulette" class="hidden w-full bg-white text-black font-serif font-bold tracking-widest py-4 rounded-xl uppercase text-xs">Accept</button>
+        </div>
+    </div>
+
+    <!-- 餐廳詳細 Modal -->
+    <div id="detail-modal" class="fixed inset-0 z-[60] bg-[#0a0a0a] overflow-y-auto transform translate-y-full transition-transform duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] flex flex-col no-scrollbar">
+        <div class="relative w-full h-[35vh] shrink-0">
+            <img id="detail-img" src="" class="w-full h-full object-cover opacity-90">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent"></div>
+            <button id="close-detail-btn" class="absolute top-6 right-6 p-3 bg-black/40 border border-white/10 rounded-full backdrop-blur-md text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="flex-1 px-6 pb-12 -mt-10 relative z-10 max-w-lg mx-auto w-full">
+            <h2 id="detail-name" class="text-2xl font-serif font-bold text-white tracking-widest mb-4"></h2>
+            <div class="flex items-center gap-3 mb-8"><div class="flex items-center gap-1.5 bg-app-gold/10 border border-app-gold/30 px-3 py-1 rounded-full"><i data-lucide="star" class="w-3 h-3 fill-app-gold text-app-gold"></i><span id="detail-rating" class="text-xs font-bold text-app-gold"></span></div></div>
+            <div class="mb-8 pl-4 border-l border-app-gold/30"><h3 class="text-[10px] font-medium text-white/30 tracking-[0.2em] uppercase mb-2">About</h3><p id="detail-desc" class="text-sm font-light text-white/70 leading-relaxed"></p></div>
+            <div class="mb-8"><h3 class="text-[10px] font-medium text-white/30 tracking-[0.2em] uppercase mb-3">Signature</h3><div id="detail-dishes" class="flex flex-wrap gap-2"></div></div>
+            <div id="detail-extra"></div>
+            <div id="detail-hours" class="hidden"></div>
+            <div id="detail-address" class="hidden"></div>
+            <a id="detail-nav-btn" href="#" target="_blank" class="w-full bg-white text-black font-serif font-bold text-[10px] tracking-widest py-4 rounded-xl flex justify-center items-center gap-2 uppercase"><i data-lucide="navigation" class="w-4 h-4"></i> Maps Navigate</a>
+        </div>
+    </div>
+
+<script>
+// ── DOM refs ──────────────────────────────────────────────
+const dom = {
+    stepSetup:       document.getElementById('step-setup'),
+    stepLoading:     document.getElementById('step-loading'),
+    stepResults:     document.getElementById('step-results'),
+    bottomActions:   document.getElementById('bottom-actions'),
+    findBtn:         document.getElementById('find-btn'),
+    refreshBtn:      document.getElementById('refresh-btn'),
+    backBtn:         document.getElementById('back-to-setup'),
+    shareBtn:        document.getElementById('share-btn'),
+    mainGreeting:    document.getElementById('main-greeting'),
+    subGreeting:     document.getElementById('sub-greeting'),
+    topTitle:        document.getElementById('app-top-title'),
+    locDisplayArea:  document.getElementById('location-display-area'),
+    locInputArea:    document.getElementById('location-input-area'),
+    locInput:        document.getElementById('location-input'),
+    locDisplayText:  document.getElementById('location-display-text'),
+    autoLocatingIcon:document.getElementById('auto-locating-icon'),
+    autoLocatedIcon: document.getElementById('auto-located-icon'),
+    reGpsBtn:        document.getElementById('re-gps-btn'),
+    locWarning:      document.getElementById('location-warning'),
+    mealBtns:        document.querySelectorAll('.meal-btn'),
+    budgetBtns:      document.querySelectorAll('.budget-btn'),
+    peopleSlider:    document.getElementById('people-slider'),
+    peopleCount:     document.getElementById('people-count-display'),
+    vibeBtns:        document.querySelectorAll('.vibe-btn'),
+    listView:        document.getElementById('restaurant-list-view'),
+    mapView:         document.getElementById('restaurant-map-view'),
+    viewListBtn:     document.getElementById('view-list-btn'),
+    viewMapBtn:      document.getElementById('view-map-btn'),
+    viewToggleBg:    document.getElementById('view-toggle-bg'),
+    rouletteBtn:     document.getElementById('roulette-btn'),
+    rouletteModal:   document.getElementById('roulette-modal'),
+    slotText:        document.getElementById('slot-text'),
+    closeRoulette:   document.getElementById('close-roulette'),
+    detailModal:     document.getElementById('detail-modal'),
+    detailImg:       document.getElementById('detail-img'),
+    detailName:      document.getElementById('detail-name'),
+    detailRating:    document.getElementById('detail-rating'),
+    detailDesc:      document.getElementById('detail-desc'),
+    detailHours:     document.getElementById('detail-hours'),
+    detailAddress:   document.getElementById('detail-address'),
+    detailDishes:    document.getElementById('detail-dishes'),
+    detailNavBtn:    document.getElementById('detail-nav-btn'),
+    closeDetailBtn:  document.getElementById('close-detail-btn'),
+    headerLoc:       document.getElementById('header-location'),
+    headerLocText:   document.getElementById('header-location-text'),
+    loadingText:     document.getElementById('loading-text'),
+    aiErrorMsg:      document.getElementById('ai-error-msg'),
+};
+
+// ── State ─────────────────────────────────────────────────
+const state = {
+    locationText: '',
+    isLocationReady: false,
+    meal: 'dinner',
+    people: 2,
+    vibe: 'casual',
+    budget: '$',
+    currentResults: []
+};
+
+const sessionResults = [];
+const FALLBACK_IMG = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80';
+// Claude API - no key needed in claude.ai environment
+
+
+// ── Time config ───────────────────────────────────────────
+const timeConfig = {
+    breakfast: { greeting: '晨光中的<br><span class="text-app-gold">美好早餐</span>。', sub: '用一頓好早餐開啟美好的一天' },
+    brunch:    { greeting: '悠閒的<br><span class="text-app-gold">週末早午餐</span>。', sub: '不急不徐，享受最美的上午時光' },
+    lunch:     { greeting: '午間的<br><span class="text-app-gold">片刻美味</span>。', sub: '充實下午的能量，從一頓好午餐開始' },
+    tea:       { greeting: '午後的<br><span class="text-app-gold">優雅時光</span>。', sub: '放慢腳步，細細品味午茶的滋味' },
+    dinner:    { greeting: '尋找<br><span class="text-app-gold">極致美味</span>。', sub: '為您的夜晚，訂製專屬菜單' },
+    latenight: { greeting: '夜深了，<br><span class="text-app-gold">覓食去</span>。', sub: '宵夜時光，尋找深夜的溫暖滋味' },
+};
+
+// ── GPS 定位 ──────────────────────────────────────────────
+function triggerAutoLocation() {
+    state.isLocationReady = false;
+    dom.autoLocatingIcon.classList.remove('hidden');
+    dom.autoLocatedIcon.classList.add('hidden');
+    dom.locDisplayText.textContent = '定位中...';
+
+    if (!navigator.geolocation) {
+        dom.locDisplayText.textContent = '請手動輸入地點';
+        dom.autoLocatingIcon.classList.add('hidden');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        async function(pos) {
+            try {
+                const r = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + pos.coords.latitude + '&lon=' + pos.coords.longitude + '&format=json&accept-language=zh-TW');
+                const d = await r.json();
+                const a = d.address || {};
+                const name = (a.suburb || a.neighbourhood || a.city_district || '') + (a.city || a.town || a.county || '');
+                state.locationText = name || d.display_name.split(',')[0];
+            } catch(e) {
+                state.locationText = pos.coords.latitude.toFixed(3) + ',' + pos.coords.longitude.toFixed(3);
+            }
+            state.isLocationReady = true;
+            dom.autoLocatingIcon.classList.add('hidden');
+            dom.autoLocatedIcon.classList.remove('hidden');
+            dom.locDisplayText.textContent = state.locationText;
+            dom.locInput.value = state.locationText;
+        },
+        function() {
+            dom.autoLocatingIcon.classList.add('hidden');
+            dom.locDisplayText.textContent = '無法定位，請手動輸入';
+            dom.locDisplayArea.click();
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+// ── View switch ───────────────────────────────────────────
+function showOnly(target) {
+    [dom.stepSetup, dom.stepLoading, dom.stepResults].forEach(function(v) {
+        v.classList.add('hidden');
+    });
+    dom.bottomActions.classList.add('hidden');
+    dom.headerLoc.classList.add('hidden');
+    target.classList.remove('hidden');
+    if (target === dom.stepResults) {
+        dom.bottomActions.classList.remove('hidden');
+        dom.headerLoc.classList.remove('hidden');
+        dom.headerLocText.textContent = state.locationText;
+    }
+}
+
+// ── AI Search ─────────────────────────────────────────────
+async function getAIRecommendations() {
+    const mealMap = { breakfast:'早餐', brunch:'早午餐', lunch:'午餐', tea:'下午茶', dinner:'晚餐', latenight:'宵夜' };
+    const vibeMap = { casual:'輕鬆休閒', date:'浪漫約會', party:'歡聚慶祝', work:'安靜專注' };
+    const budgetMap = { '$':'平價實惠', '$$':'精緻享受', '$$$':'奢華饗宴' };
+
+    const prompt = '你是台灣美食專家與在地達人。推薦3家在「' + state.locationText + '」真實存在的知名餐廳。'
+        + '時段：' + mealMap[state.meal] + '，預算：' + budgetMap[state.budget]
+        + '，人數：' + state.people + '人，氣氛：' + vibeMap[state.vibe] + '。'
+        + '請根據你對這些餐廳的了解，提供詳盡且真實的資訊。'
+        + '只回傳合法JSON物件，不加說明或markdown。'
+        + '格式：{"restaurants":[{'
+        + '"name":"餐廳名稱",'
+        + '"rating":4.5,'
+        + '"reviews":1200,'
+        + '"price":"$300-500/人",'
+        + '"tags":["標籤1","標籤2","標籤3"],'
+        + '"cuisine":"料理類型",'
+        + '"desc":"詳細的餐廳介紹，包含特色風格環境氛圍，至少50字",'
+        + '"story":"餐廳背景故事或主廚理念，至少30字",'
+        + '"review":"真實感的顧客評語",'
+        + '"mustOrder":"必點推薦理由，一句話",'
+        + '"dishes":["招牌菜1","招牌菜2","招牌菜3","招牌菜4","招牌菜5"],'
+        + '"hours":"營業時間（含公休日）",'
+        + '"phone":"電話號碼",'
+        + '"address":"詳細地址",'
+        + '"nearbyMRT":"最近捷運站（若有）",'
+        + '"parking":"停車資訊",'
+        + '"reservation":"訂位方式（是否需要、如何訂位）",'
+        + '"tips":"達人小提示（最佳用餐時間、注意事項等）",'
+        + '"imgKeyword":"英文食物圖片關鍵字 如 ramen noodles soup"'
+        + '}]}';
+
+    try {
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json',
+                'authorization': 'Bearer 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'
+            },
+            body: JSON.stringify({
+                model: 'google/gemini-2.0-flash-lite-001',
+                max_tokens: 4096,
+                messages: [{ role: 'user', content: prompt }]
+            })
+        });
+        const rawText = await res.text();
+        let data;
+        try { data = JSON.parse(rawText); } catch(e) { throw new Error('HTTP ' + res.status + ': ' + rawText.slice(0,150)); }
+        if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+        const txt = data.choices[0].message.content;
+        let restaurants = [];
+        try {
+            // Strip all markdown fences and find JSON object
+            let clean = txt.replace(/```[a-z]*/g, '').replace(/```/g, '').trim();
+            const objStart = clean.indexOf('{');
+            const objEnd = clean.lastIndexOf('}');
+            if (objStart === -1) throw new Error('no JSON found');
+            const parsed = JSON.parse(clean.slice(objStart, objEnd + 1));
+            restaurants = parsed.restaurants || [];
+        } catch(pe) {
+            window._lastAIError = pe.message + ' | 回應: ' + txt.slice(0, 150);
+            return [];
+        }
+        restaurants.forEach(function(r, i) {
+            r.id = Date.now() + i;
+            // Use restaurant name to search Wikipedia for image
+            var searchName = encodeURIComponent(r.name);
+            r.img = 'https://en.wikipedia.org/w/index.php?action=render&title=Special:Search&search=' + searchName;
+            // Use Wikimedia Commons search as image source
+            r.img = 'https://commons.wikimedia.org/w/index.php?title=Special:Search&search=' + searchName + '&ns6=1';
+            // Best working approach: use Google's image via a CORS-friendly proxy
+            r.img = 'https://images.weserv.nl/?url=' + encodeURIComponent('https://www.google.com/search?q=' + r.name + '&tbm=isch') + '&w=400&h=300&fit=cover';
+            sessionResults.push(r);
+        });
+        // Fetch actual images via Wikipedia API for each restaurant
+        state.currentResults.forEach(function(r) {
+            fetch('https://zh.wikipedia.org/w/api.php?action=query&titles=' + encodeURIComponent(r.name) + '&prop=pageimages&format=json&pithumbsize=400&origin=*')
+                .then(function(res){ return res.json(); })
+                .then(function(data){
+                    var pages = data.query.pages;
+                    var page = pages[Object.keys(pages)[0]];
+                    if (page && page.thumbnail) {
+                        var imgEl = document.querySelector('[data-rid="' + r.id + '"] img');
+                        if (imgEl) imgEl.src = page.thumbnail.source;
+                        r.img = page.thumbnail.source;
+                    }
+                }).catch(function(){});
+        });
+        return restaurants;
+    } catch(e) {
+        console.error(e);
+        window._lastAIError = e.message;
+        return [];
+    }
+}
+
+async function performSearch(msg) {
+    dom.aiErrorMsg.classList.add('hidden');
+    dom.locWarning.classList.add('hidden');
+    if (!state.isLocationReady || !state.locationText) {
+        dom.locWarning.classList.remove('hidden');
+        return;
+    }
+    dom.loadingText.textContent = msg;
+    showOnly(dom.stepLoading);
+    const results = await getAIRecommendations();
+    if (results.length === 0) {
+        showOnly(dom.stepSetup);
+        dom.aiErrorMsg.textContent = window._lastAIError ? ('錯誤：' + window._lastAIError.slice(0,80)) : 'AI 搜尋遇到問題，請稍後再試';
+        dom.aiErrorMsg.classList.remove('hidden');
+        return;
+    }
+    state.currentResults = results;
+    renderList();
+    renderMap();
+    showOnly(dom.stepResults);
+}
+
+// ── Render ────────────────────────────────────────────────
+function renderList() {
+    dom.listView.innerHTML = state.currentResults.map(function(r) {
+        const mapQ = encodeURIComponent(r.name + ' ' + r.address);
+        const tags = (r.tags || []).map(function(t) {
+            return '<span class="px-1.5 py-0.5 border border-white/10 rounded text-[8px] uppercase text-white/40 whitespace-nowrap">' + t + '</span>';
+        }).join('');
+        return '<div onclick="openDetail(' + r.id + ')" class="restaurant-card bg-app-surface rounded-2xl border border-white/5 overflow-hidden flex flex-col shadow-xl cursor-pointer">'
+            + '<div class="flex h-[110px] relative">'
+            + '<img src="' + r.img + '" onerror="this.src=\'' + FALLBACK_IMG + '\'" class="w-[90px] h-full object-cover opacity-60 shrink-0">'
+            + '<div class="p-4 flex flex-col justify-center flex-1 min-w-0">'
+            + '<h3 class="font-serif font-bold text-white text-sm truncate mb-1">' + r.name + '</h3>'
+            + '<div class="flex items-center gap-2 mb-2 text-[10px] font-bold text-app-gold"><i data-lucide="star" class="w-3 h-3 fill-app-gold"></i>' + r.rating + '</div>'
+            + '<div class="flex gap-1.5 overflow-hidden">' + tags + '</div>'
+            + '</div>'
+            + '<a href="https://www.google.com/maps/search/?api=1&query=' + mapQ + '" target="_blank" onclick="event.stopPropagation();" class="absolute right-4 top-4 p-2 bg-white/5 border border-white/10 text-white rounded-full"><i data-lucide="navigation" class="w-3 h-3"></i></a>'
+            + '</div>'
+            + '<div class="px-4 py-3 bg-white/[0.02] border-t border-white/5 quote-bg"><p class="text-[10px] text-white/50 leading-relaxed italic line-clamp-1 pl-4">「' + (r.review || '') + '」</p></div>'
+            + '</div>';
+    }).join('');
+    lucide.createIcons();
+}
+
+function renderMap() {
+    const container = document.getElementById('map-pins-container');
+    container.innerHTML = '';
+    state.currentResults.forEach(function(r) {
+        const top = 15 + Math.random() * 60;
+        const left = 15 + Math.random() * 60;
+        container.innerHTML += '<div onclick="openDetail(' + r.id + ')" class="absolute flex flex-col items-center z-10 cursor-pointer" style="top:' + top + '%;left:' + left + '%;transform:translate(-50%,-100%)">'
+            + '<div class="bg-white/10 backdrop-blur-md px-2 py-1 rounded text-[8px] text-white whitespace-nowrap mb-1 border border-white/10">' + r.name + '</div>'
+            + '<div class="w-2.5 h-2.5 bg-app-gold rounded-full shadow-[0_0_10px_rgba(212,175,55,1)] border border-black"></div>'
+            + '</div>';
+    });
+}
+
+window.openDetail = function(id) {
+    const r = sessionResults.find(function(x) { return x.id === id; });
+    if (!r) return;
+    dom.detailImg.src = r.img || FALLBACK_IMG;
+    // Try to get better image from Wikipedia
+    fetch('https://zh.wikipedia.org/w/api.php?action=query&titles=' + encodeURIComponent(r.name) + '&prop=pageimages&format=json&pithumbsize=800&origin=*')
+        .then(function(res){ return res.json(); })
+        .then(function(data){
+            var pages = data.query.pages;
+            var page = pages[Object.keys(pages)[0]];
+            if (page && page.thumbnail) dom.detailImg.src = page.thumbnail.source;
+        }).catch(function(){});
+    dom.detailName.textContent = r.name;
+    dom.detailRating.textContent = r.rating + ' ★  ' + (r.reviews ? r.reviews.toLocaleString() + ' 評論' : '') + '  ' + (r.price || '');
+
+    // Build rich detail content
+    const extraInfo = [
+        r.story ? '<div style="margin-bottom:24px;padding-left:16px;border-left:2px solid rgba(212,175,55,0.3)"><p style="font-size:10px;font-weight:500;color:rgba(255,255,255,0.3);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px">Story</p><p style="font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7;font-weight:300">' + r.story + '</p></div>' : '',
+        r.mustOrder ? '<div style="margin-bottom:24px;padding:12px 14px;background:rgba(212,175,55,0.08);border-radius:12px;border-left:3px solid rgba(212,175,55,0.6)"><p style="font-size:10px;font-weight:600;color:#D4AF37;margin-bottom:4px">✦ 必點推薦</p><p style="font-size:12px;color:rgba(212,175,55,0.85)">' + r.mustOrder + '</p></div>' : '',
+        '<div style="margin-bottom:24px"><p style="font-size:10px;font-weight:500;color:rgba(255,255,255,0.3);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:10px">Signature Dishes</p><div style="display:flex;flex-wrap:wrap;gap:8px">' + (r.dishes || []).map(function(d){ return '<span style="padding:6px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:11px;color:rgba(255,255,255,0.7)">' + d + '</span>'; }).join('') + '</div></div>',
+        '<div style="margin-bottom:24px;display:flex;flex-direction:column;gap:10px">',
+        r.hours ? '<div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#D4AF37;flex-shrink:0;font-size:13px">⏰</span><div><p style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px">營業時間</p><p style="font-size:12px;color:rgba(255,255,255,0.65)">' + r.hours + '</p></div></div>' : '',
+        r.phone ? '<div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#D4AF37;flex-shrink:0;font-size:13px">📞</span><div><p style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px">電話</p><a href="tel:' + r.phone + '" style="font-size:12px;color:rgba(255,255,255,0.65)">' + r.phone + '</a></div></div>' : '',
+        r.nearbyMRT ? '<div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#D4AF37;flex-shrink:0;font-size:13px">🚇</span><div><p style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px">最近捷運</p><p style="font-size:12px;color:rgba(255,255,255,0.65)">' + r.nearbyMRT + '</p></div></div>' : '',
+        r.parking ? '<div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#D4AF37;flex-shrink:0;font-size:13px">🅿️</span><div><p style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px">停車</p><p style="font-size:12px;color:rgba(255,255,255,0.65)">' + r.parking + '</p></div></div>' : '',
+        r.reservation ? '<div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#D4AF37;flex-shrink:0;font-size:13px">📋</span><div><p style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px">訂位</p><p style="font-size:12px;color:rgba(255,255,255,0.65)">' + r.reservation + '</p></div></div>' : '',
+        r.address ? '<div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#D4AF37;flex-shrink:0;font-size:13px">📍</span><div><p style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:2px">地址</p><p style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.5">' + r.address + '</p></div></div>' : '',
+        '</div>',
+        r.tips ? '<div style="margin-bottom:24px;padding:12px 14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06)"><p style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.5);margin-bottom:6px">💡 達人小提示</p><p style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6">' + r.tips + '</p></div>' : '',
+        '<div style="margin-bottom:24px;padding-left:16px;border-left:2px solid rgba(255,255,255,0.1)" class="quote-bg"><p style="font-size:11px;color:rgba(255,255,255,0.4);font-style:italic;line-height:1.6;padding-left:4px">「' + (r.review || '') + '」</p></div>',
+    ].join('');
+
+    dom.detailDesc.innerHTML = (r.desc || '') + '</p><p style="margin-top:0">';  // hack to close/open p
+    document.getElementById('detail-extra').innerHTML = extraInfo;
+
+    dom.detailNavBtn.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(r.name + ' ' + r.address);
+    dom.detailDishes.innerHTML = '';
+    dom.detailHours.textContent = '';
+    dom.detailAddress.textContent = '';
+    dom.detailModal.classList.remove('translate-y-full');
+    dom.detailModal.scrollTop = 0;
+    lucide.createIcons();
+};
+
+// ── Meal type ─────────────────────────────────────────────
+function setMealType(type) {
+    state.meal = type;
+    dom.mealBtns.forEach(function(b) {
+        const on = b.dataset.meal === type;
+        b.style.background = on ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)';
+        b.style.color = on ? '#D4AF37' : 'rgba(255,255,255,0.5)';
+        b.style.borderColor = on ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.1)';
+        b.style.transform = on ? 'scale(1.05)' : 'scale(1)';
+    });
+    const cfg = timeConfig[type];
+    dom.mainGreeting.innerHTML = cfg.greeting;
+    dom.subGreeting.textContent = cfg.sub;
+}
+
+function setBudget(val) {
+    state.budget = val;
+    dom.budgetBtns.forEach(function(b) {
+        const on = b.dataset.val === val;
+        b.style.background = on ? 'rgba(212,175,55,0.15)' : 'transparent';
+        b.style.color = on ? '#D4AF37' : 'rgba(255,255,255,0.4)';
+        b.style.borderColor = on ? 'rgba(212,175,55,0.5)' : 'transparent';
+        b.style.transform = on ? 'scale(1.03)' : 'scale(1)';
+    });
+}
+
+function setVibe(val) {
+    state.vibe = val;
+    dom.vibeBtns.forEach(function(b) {
+        const on = b.dataset.vibe === val;
+        b.style.background = on ? 'rgba(212,175,55,0.15)' : 'rgba(255,255,255,0.05)';
+        b.style.color = on ? '#D4AF37' : 'rgba(255,255,255,0.5)';
+        b.style.borderColor = on ? 'rgba(212,175,55,0.5)' : 'rgba(255,255,255,0.05)';
+        b.style.transform = on ? 'scale(1.03)' : 'scale(1)';
+    });
+}
+
+// ── Event listeners ───────────────────────────────────────
+dom.findBtn.addEventListener('click', function() { performSearch('AI 正在為您訂製選單...'); });
+dom.refreshBtn.addEventListener('click', function() { performSearch('AI 正在重新搜尋...'); });
+dom.backBtn.addEventListener('click', function() { showOnly(dom.stepSetup); });
+dom.shareBtn.addEventListener('click', function() {
+    if (navigator.share) navigator.share({ title: '有啥好吃的?', text: '用 AI 幫你找餐廳！' });
+});
+
+dom.locDisplayArea.addEventListener('click', function() {
+    dom.locDisplayArea.classList.add('hidden');
+    dom.locInputArea.classList.remove('hidden');
+    dom.locInputArea.classList.add('flex');
+    dom.locInput.focus();
+});
+
+dom.locInput.addEventListener('input', function(e) {
+    state.locationText = e.target.value.trim();
+    state.isLocationReady = state.locationText.length > 0;
+    dom.locWarning.classList.add('hidden');
+});
+
+dom.reGpsBtn.addEventListener('click', function() {
+    dom.locInputArea.classList.add('hidden');
+    dom.locInputArea.classList.remove('flex');
+    dom.locDisplayArea.classList.remove('hidden');
+    triggerAutoLocation();
+});
+
+dom.mealBtns.forEach(function(b) {
+    b.addEventListener('click', function() { setMealType(b.dataset.meal); });
+});
+
+dom.budgetBtns.forEach(function(b) {
+    b.addEventListener('click', function() { setBudget(b.dataset.val); });
+});
+
+dom.peopleSlider.addEventListener('input', function(e) {
+    state.people = parseInt(e.target.value);
+    dom.peopleCount.textContent = state.people + ' 人';
+});
+
+dom.vibeBtns.forEach(function(b) {
+    b.addEventListener('click', function() { setVibe(b.dataset.vibe); });
+});
+
+dom.viewListBtn.addEventListener('click', function() {
+    dom.listView.classList.remove('hidden');
+    dom.mapView.classList.add('hidden');
+    dom.viewToggleBg.style.transform = 'translateX(0%)';
+    dom.viewListBtn.classList.replace('text-white/50', 'text-black');
+    dom.viewMapBtn.classList.replace('text-black', 'text-white/50');
+});
+
+dom.viewMapBtn.addEventListener('click', function() {
+    dom.listView.classList.add('hidden');
+    dom.mapView.classList.remove('hidden');
+    dom.viewToggleBg.style.transform = 'translateX(100%)';
+    dom.viewMapBtn.classList.replace('text-white/50', 'text-black');
+    dom.viewListBtn.classList.replace('text-black', 'text-white/50');
+});
+
+dom.closeDetailBtn.addEventListener('click', function() {
+    dom.detailModal.classList.add('translate-y-full');
+});
+
+dom.rouletteBtn.addEventListener('click', function() {
+    if (state.currentResults.length === 0) return;
+    dom.closeRoulette.classList.add('hidden');
+    dom.slotText.textContent = '...';
+    dom.rouletteModal.classList.remove('hidden');
+    let counter = 0;
+    const interval = setInterval(function() {
+        dom.slotText.textContent = state.currentResults[counter % state.currentResults.length].name;
+        counter++;
+    }, 100);
+    setTimeout(function() {
+        clearInterval(interval);
+        const winner = state.currentResults[Math.floor(Math.random() * state.currentResults.length)];
+        dom.slotText.innerHTML = '<span class="text-app-gold tracking-widest">' + winner.name + '</span>';
+        dom.closeRoulette.classList.remove('hidden');
+        dom.closeRoulette.onclick = function() {
+            dom.rouletteModal.classList.add('hidden');
+            window.openDetail(winner.id);
+        };
+    }, 2000);
+});
+
+// ── Init ──────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+    const hour = new Date().getHours();
+    let type = 'dinner';
+    if (hour >= 5 && hour < 10) type = 'breakfast';
+    else if (hour >= 10 && hour < 12) type = 'brunch';
+    else if (hour >= 12 && hour < 15) type = 'lunch';
+    else if (hour >= 15 && hour < 18) type = 'tea';
+    else if (hour >= 18 && hour < 22) type = 'dinner';
+    else type = 'latenight';
+    setMealType(type);
+    setBudget('$');
+    setVibe('casual');
+    triggerAutoLocation();
+});
+</script>
+</body>
+</html>
