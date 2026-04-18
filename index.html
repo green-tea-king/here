@@ -41,14 +41,14 @@
         .meal-btn, .budget-btn, .vibe-btn { transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s; }
     </style>
 </head>
-<body class="font-sans w-full h-screen flex flex-col select-none relative">
+<body class="font-sans w-full h-screen flex flex-col relative">
 
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div class="absolute top-[-10%] left-[-10%] w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-amber-900/10 rounded-full blur-[80px]"></div>
         <div class="absolute bottom-[-5%] right-[-5%] w-[250px] sm:w-[400px] h-[250px] sm:h-[400px] bg-stone-800/30 rounded-full blur-[60px]"></div>
     </div>
 
-    <header class="bg-app-bg/60 backdrop-blur-2xl px-4 sm:px-6 py-3 flex justify-between items-center z-10 sticky top-0 shrink-0 border-b border-white/5 w-full gap-2">
+    <header class="bg-app-bg/60 backdrop-blur-2xl px-4 sm:px-6 py-3 flex justify-between items-center z-10 sticky top-0 shrink-0 border-b border-white/5 w-full gap-2" style="position:sticky;top:0;z-index:10">
         <div class="flex items-center min-w-0 flex-1">
             <h1 id="app-top-title" class="text-lg sm:text-xl font-serif font-bold text-white tracking-widest truncate">有啥好吃的?</h1>
         </div>
@@ -61,7 +61,7 @@
         </div>
     </header>
 
-    <main class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full z-20" id="main-scroll-area">
+    <main class="flex-1 overflow-y-auto no-scrollbar relative w-full h-full z-10" id="main-scroll-area">
 
         <!-- 步驟一：設定條件 -->
         <div id="step-setup" class="p-6 pb-32 space-y-8 max-w-lg mx-auto">
