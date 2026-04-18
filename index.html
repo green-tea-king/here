@@ -1,348 +1,564 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>有啥好吃的?</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        html,body{background:#0a0a0a;color:#e5e5e5;font-family:'Noto Sans TC',sans-serif;max-width:100vw;overflow-x:hidden}
-        .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-        .no-scrollbar::-webkit-scrollbar{display:none}
-        input[type=range]{-webkit-appearance:none;width:100%;background:transparent}
-        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:20px;width:20px;border-radius:50%;background:#D4AF37;cursor:pointer;margin-top:-9px;box-shadow:0 0 10px rgba(212,175,55,.3);border:2px solid #0a0a0a}
-        input[type=range]::-webkit-slider-runnable-track{width:100%;height:2px;background:rgba(255,255,255,.1);border-radius:1px}
-        .quote-bg::before{content:'"';position:absolute;top:-10px;left:-5px;font-size:3rem;color:rgba(212,175,55,.15);line-height:1}
-        .btn-transition{transition:background .2s,color .2s,border-color .2s,transform .15s}
-        .gold{color:#D4AF37}
-        .serif{font-family:'Noto Serif TC',serif}
-    i[data-lucide]{pointer-events:none !important}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>有啥好吃的?</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍽️</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:#0a0a0a;color:#e5e5e5;font-family:'Noto Sans TC',sans-serif;height:100%;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;max-width:520px;margin:0 auto;position:relative}
+.serif{font-family:'Noto Serif TC',serif}
+.gold{color:#D4AF37}
+/* Scrollable area */
+#scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#scroll-area::-webkit-scrollbar{display:none}
+/* Screens */
+.screen{display:none;padding:20px 20px 100px}
+.screen.active{display:block}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer;font-family:'Noto Sans TC',sans-serif;transition:opacity .15s,transform .1s;-webkit-appearance:none;appearance:none;user-select:none;-webkit-user-select:none}
+.btn:active{opacity:.7;transform:scale(.97)}
+.btn-primary{background:white;color:black;font-weight:700;font-size:14px;padding:16px;border-radius:14px;width:100%;letter-spacing:.15em}
+.btn-gold-outline{background:transparent;color:#D4AF37;border:1px solid rgba(212,175,55,.4);font-size:12px;padding:14px;border-radius:14px;width:100%;letter-spacing:.12em}
+.btn-small{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1);padding:12px;border-radius:12px;font-size:11px}
+/* Option buttons */
+.opt-btn{background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:10px 8px;font-size:11px;letter-spacing:.08em;cursor:pointer;transition:all .2s;-webkit-appearance:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;justify-content:center;gap:5px;font-family:'Noto Sans TC',sans-serif}
+.opt-btn:active{opacity:.7}
+.opt-btn.on{background:rgba(212,175,55,.18);color:#D4AF37;border-color:rgba(212,175,55,.5)}
+/* Budget buttons */
+.budget-btn{flex:1;padding:12px 4px;background:transparent;color:rgba(255,255,255,.4);border:1px solid transparent;border-radius:12px;font-size:10px;letter-spacing:.08em;cursor:pointer;transition:all .2s;-webkit-appearance:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;justify-content:center;gap:5px;font-family:'Noto Sans TC',sans-serif}
+.budget-btn:active{opacity:.7}
+.budget-btn.on{background:rgba(212,175,55,.18);color:#D4AF37;border-color:rgba(212,175,55,.5)}
+/* Vibe buttons */
+.vibe-btn{background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;font-size:11px;cursor:pointer;transition:all .2s;-webkit-appearance:none;user-select:none;-webkit-user-select:none;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Noto Sans TC',sans-serif}
+.vibe-btn:active{opacity:.7}
+.vibe-btn.on{background:rgba(212,175,55,.18);color:#D4AF37;border-color:rgba(212,175,55,.5)}
+/* Range slider */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:rgba(255,255,255,.1);border-radius:1px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;background:#D4AF37;border-radius:50%;cursor:pointer;box-shadow:0 0 8px rgba(212,175,55,.4)}
+/* Cards */
+.card{background:#111;border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;margin-bottom:16px;cursor:pointer}
+.card:active{opacity:.85}
+/* Modal */
+.modal{position:fixed;inset:0;z-index:100;background:#0a0a0a;overflow-y:auto;transform:translateY(100%);transition:transform .4s cubic-bezier(.25,.8,.25,1);pointer-events:none}
+.modal.open{transform:translateY(0);pointer-events:auto}
+/* Loading */
+#loading-screen{position:fixed;inset:0;z-index:90;background:rgba(10,10,10,.95);display:none;flex-direction:column;align-items:center;justify-content:center}
+#loading-screen.show{display:flex}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:#D4AF37;border-radius:50%;animation:spin .8s linear infinite}
+/* Glow bg */
+.glow-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.glow1{position:absolute;top:-10%;left:-10%;width:300px;height:300px;background:rgba(120,60,0,.12);border-radius:50%;filter:blur(80px)}
+.glow2{position:absolute;bottom:-5%;right:-5%;width:250px;height:250px;background:rgba(60,60,80,.2);border-radius:50%;filter:blur(60px)}
+/* Roulette */
+#roulette-overlay{position:fixed;inset:0;z-index:110;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:24px}
+#roulette-overlay.show{display:flex}
+/* Bottom bar */
+#bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;padding:12px 20px 24px;background:rgba(10,10,10,.88);backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.07);z-index:50;display:none}
+#bottom-bar.show{display:block}
+</style>
 </head>
-<body style="margin:0;width:100%;height:100vh;display:flex;flex-direction:column;position:relative">
+<body>
 
-<!-- 背景光暈 -->
-<div style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden">
-    <div style="position:absolute;top:-10%;left:-10%;width:300px;height:300px;background:rgba(120,60,0,.1);border-radius:50%;filter:blur(80px)"></div>
-    <div style="position:absolute;bottom:-5%;right:-5%;width:250px;height:250px;background:rgba(80,80,80,.2);border-radius:50%;filter:blur(60px)"></div>
-</div>
+<div class="glow-bg"><div class="glow1"></div><div class="glow2"></div></div>
 
 <!-- Header -->
-<header style="background:rgba(10,10,10,.8);backdrop-filter:blur(20px);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;border-bottom:1px solid rgba(255,255,255,.05);flex-shrink:0">
-    <h1 class="serif" style="font-size:18px;font-weight:700;color:white;letter-spacing:.15em;margin:0;display:flex;align-items:center;gap:8px"><i data-lucide="utensils" style="width:18px;height:18px;color:#D4AF37;flex-shrink:0"></i>有啥好吃的?</h1>
-    <div style="display:flex;align-items:center;gap:8px">
-        <span style="font-size:9px;color:rgba(255,255,255,.35);font-family:monospace;font-weight:700">v4</span>
-        <span style="font-size:8px;color:rgba(255,255,255,.18);font-family:monospace">2026.04.18 02:00</span>
-        <div id="header-location" style="display:none;align-items:center;gap:6px;font-size:10px;padding:4px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:20px;color:rgba(255,255,255,.7)">
-            <i data-lucide="map-pin" style="width:12px;height:12px;color:#D4AF37;flex-shrink:0"></i>
-            <span id="header-location-text" class="serif" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">定位中...</span>
-        </div>
+<div id="app">
+<header style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;position:relative;z-index:10;background:rgba(10,10,10,.8);backdrop-filter:blur(16px)">
+  <h1 class="serif" style="margin:0;font-size:17px;font-weight:700;color:white;letter-spacing:.12em">🍽 有啥好吃的?</h1>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:9px;color:rgba(255,255,255,.35);font-family:monospace;font-weight:700">v5</span>
+    <span style="font-size:8px;color:rgba(255,255,255,.2);font-family:monospace">2026.04.18</span>
+    <div id="loc-badge" style="display:none;align-items:center;gap:5px;padding:3px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;font-size:10px;color:rgba(255,255,255,.65)">
+      📍 <span id="loc-badge-text" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
     </div>
+  </div>
 </header>
 
-<!-- Main -->
-<main id="main-scroll-area" class="no-scrollbar" style="flex:1;overflow-y:auto;position:relative;z-index:5">
+<!-- Scroll area -->
+<div id="scroll-area">
 
-<!-- 設定畫面 -->
-<div id="step-setup" style="padding:24px 24px 120px;max-width:480px;margin:0 auto">
-    <div style="margin:16px 0 32px">
-        <h2 id="main-greeting" class="serif" style="font-size:28px;font-weight:700;color:white;margin:0 0 8px;letter-spacing:.1em;line-height:1.3">尋找<br><span class="gold">極致美味</span>。</h2>
-        <p id="sub-greeting" style="color:rgba(255,255,255,.4);font-size:13px;font-weight:300;letter-spacing:.1em;margin:0">為您的夜晚，訂製專屬菜單</p>
+<!-- Setup Screen -->
+<div id="screen-setup" class="screen active">
+  <div style="margin:16px 0 28px">
+    <h2 id="greeting" class="serif" style="font-size:26px;font-weight:700;color:white;margin:0 0 6px;line-height:1.3">尋找<br><span class="gold">極致美味</span>。</h2>
+    <p id="subgreeting" style="color:rgba(255,255,255,.4);font-size:13px;margin:0">為您的夜晚，訂製專屬菜單</p>
+  </div>
+
+  <!-- Location -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">📍 Location</div>
+    <div id="loc-display" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0">
+        <span id="loc-spinner" style="width:14px;height:14px;border:2px solid rgba(255,255,255,.1);border-top-color:#D4AF37;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;display:inline-block"></span>
+        <span id="loc-icon" style="display:none;flex-shrink:0">✅</span>
+        <span id="loc-text" class="serif" style="font-size:13px;color:rgba(255,255,255,.8);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">定位中...</span>
+      </div>
+      <span style="color:rgba(255,255,255,.3);font-size:12px">✏️</span>
     </div>
-
-    <!-- Location -->
-    <div style="margin-bottom:28px">
-        <label style="font-size:10px;font-weight:500;letter-spacing:.2em;color:rgba(255,255,255,.5);text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:10px">
-            <i data-lucide="compass" style="width:12px;height:12px;color:#D4AF37"></i> Location
-        </label>
-        <div id="location-display-area" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
-            <div style="display:flex;align-items:center;gap:12px;color:rgba(255,255,255,.8);min-width:0">
-                <i data-lucide="loader-2" id="auto-locating-icon" style="width:16px;height:16px;color:#D4AF37;flex-shrink:0;animation:spin 1s linear infinite"></i>
-                <i data-lucide="map-pin" id="auto-located-icon" style="width:16px;height:16px;color:#D4AF37;flex-shrink:0;display:none"></i>
-                <span id="location-display-text" class="serif" style="font-size:14px;letter-spacing:.05em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">定位中...</span>
-            </div>
-            <i data-lucide="pen-line" style="width:14px;height:14px;color:rgba(255,255,255,.3);flex-shrink:0"></i>
-        </div>
-        <div id="location-input-area" style="display:none;gap:8px;margin-top:8px">
-            <input type="text" id="location-input" placeholder="輸入城市或區域" class="serif" style="flex:1;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px 20px;font-size:14px;color:white;outline:none;width:100%;box-sizing:border-box">
-            <button id="re-gps-btn" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:14px;color:rgba(255,255,255,.7);cursor:pointer;flex-shrink:0">
-                <i data-lucide="crosshair" style="width:18px;height:18px;display:block"></i>
-            </button>
-        </div>
-        <p id="location-warning" style="display:none;color:#f87171;font-size:12px;margin-top:6px;letter-spacing:.1em">請先設定地點</p>
+    <div id="loc-input-wrap" style="display:none;margin-top:8px;display:none">
+      <div style="display:flex;gap:8px">
+        <input id="loc-input" type="text" placeholder="輸入城市或區域" class="serif" style="flex:1;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:13px 16px;font-size:13px;color:white;outline:none;font-family:'Noto Serif TC',serif">
+        <button onclick="doGPS()" class="btn btn-small" style="padding:13px 14px;flex-shrink:0">🎯</button>
+      </div>
     </div>
+    <div id="loc-warn" style="display:none;color:#f87171;font-size:11px;margin-top:6px">請先設定地點</div>
+  </div>
 
-    <!-- Time -->
-    <div style="margin-bottom:28px">
-        <label style="font-size:10px;font-weight:500;letter-spacing:.2em;color:rgba(255,255,255,.5);text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:10px">
-            <i data-lucide="clock" style="width:12px;height:12px;color:#D4AF37"></i> Time
-        </label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-            <button class="meal-btn btn-transition" data-meal="breakfast" style="padding:10px;border-radius:24px;font-size:11px;font-weight:500;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="sunrise" style="width:13px;height:13px;flex-shrink:0"></i>早餐</button>
-            <button class="meal-btn btn-transition" data-meal="brunch" style="padding:10px;border-radius:24px;font-size:11px;font-weight:500;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="coffee" style="width:13px;height:13px;flex-shrink:0"></i>早午餐</button>
-            <button class="meal-btn btn-transition" data-meal="lunch" style="padding:10px;border-radius:24px;font-size:11px;font-weight:500;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="sun" style="width:13px;height:13px;flex-shrink:0"></i>午餐</button>
-            <button class="meal-btn btn-transition" data-meal="tea" style="padding:10px;border-radius:24px;font-size:11px;font-weight:500;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="cake" style="width:13px;height:13px;flex-shrink:0"></i>午茶</button>
-            <button class="meal-btn btn-transition" data-meal="dinner" style="padding:10px;border-radius:24px;font-size:11px;font-weight:500;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="moon" style="width:13px;height:13px;flex-shrink:0"></i>晚餐</button>
-            <button class="meal-btn btn-transition" data-meal="latenight" style="padding:10px;border-radius:24px;font-size:11px;font-weight:500;letter-spacing:.1em;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="wine" style="width:13px;height:13px;flex-shrink:0"></i>宵夜</button>
-        </div>
+  <!-- Time -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">🕐 Time</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <button class="opt-btn" data-meal="breakfast" onclick="setMeal(this)">🌅 早餐</button>
+      <button class="opt-btn" data-meal="brunch" onclick="setMeal(this)">☕ 早午餐</button>
+      <button class="opt-btn" data-meal="lunch" onclick="setMeal(this)">☀️ 午餐</button>
+      <button class="opt-btn" data-meal="tea" onclick="setMeal(this)">🍰 午茶</button>
+      <button class="opt-btn" data-meal="dinner" onclick="setMeal(this)">🌙 晚餐</button>
+      <button class="opt-btn" data-meal="latenight" onclick="setMeal(this)">🍺 宵夜</button>
     </div>
+  </div>
 
-    <!-- Budget -->
-    <div style="margin-bottom:28px">
-        <label style="font-size:10px;font-weight:500;letter-spacing:.2em;color:rgba(255,255,255,.5);text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:10px">
-            <i data-lucide="circle-dollar-sign" style="width:12px;height:12px;color:#D4AF37"></i> Budget
-        </label>
-        <div style="display:flex;gap:4px;background:rgba(255,255,255,.05);padding:4px;border-radius:16px">
-            <button class="budget-btn btn-transition" data-val="$" style="flex:1;padding:12px 4px;border-radius:12px;font-size:10px;font-weight:500;letter-spacing:.1em;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="leaf" style="width:12px;height:12px;flex-shrink:0"></i>日常便飯</button>
-            <button class="budget-btn btn-transition" data-val="$$" style="flex:1;padding:12px 4px;border-radius:12px;font-size:10px;font-weight:500;letter-spacing:.1em;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="gem" style="width:12px;height:12px;flex-shrink:0"></i>精緻享受</button>
-            <button class="budget-btn btn-transition" data-val="$$$" style="flex:1;padding:12px 4px;border-radius:12px;font-size:10px;font-weight:500;letter-spacing:.1em;border:1px solid transparent;background:transparent;color:rgba(255,255,255,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px"><i data-lucide="crown" style="width:12px;height:12px;flex-shrink:0"></i>奢華饗宴</button>
-        </div>
+  <!-- Budget -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">💰 Budget</div>
+    <div style="display:flex;gap:4px;background:rgba(255,255,255,.04);padding:4px;border-radius:14px">
+      <button class="budget-btn" data-budget="$" onclick="setBudget(this)">🌿 日常</button>
+      <button class="budget-btn" data-budget="$$" onclick="setBudget(this)">💎 精緻</button>
+      <button class="budget-btn" data-budget="$$$" onclick="setBudget(this)">👑 奢華</button>
     </div>
+  </div>
 
-    <!-- Guests -->
-    <div style="margin-bottom:28px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-            <label style="font-size:10px;font-weight:500;letter-spacing:.2em;color:rgba(255,255,255,.5);text-transform:uppercase;display:flex;align-items:center;gap:6px">
-                <i data-lucide="users" style="width:12px;height:12px;color:#D4AF37"></i> Guests
-            </label>
-            <span id="people-count-display" class="serif" style="font-size:16px;font-weight:700;color:white;letter-spacing:.1em">2 人</span>
-        </div>
-        <input type="range" id="people-slider" min="1" max="10" value="2" style="width:100%">
+  <!-- Guests -->
+  <div style="margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase">👥 Guests</div>
+      <span id="guest-label" class="serif" style="font-size:16px;font-weight:700;color:white">2 人</span>
     </div>
+    <input type="range" id="guest-slider" min="1" max="10" value="2" oninput="setGuests(this.value)">
+  </div>
 
-    <!-- Vibe -->
-    <div style="margin-bottom:32px">
-        <label style="font-size:10px;font-weight:500;letter-spacing:.2em;color:rgba(255,255,255,.5);text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:10px">
-            <i data-lucide="sparkles" style="width:12px;height:12px;color:#D4AF37"></i> Vibe
-        </label>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button class="vibe-btn btn-transition" data-vibe="casual" style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border-radius:12px;padding:12px;font-size:11px;font-weight:500;cursor:pointer"><i data-lucide="coffee" style="width:14px;height:14px"></i>輕鬆</button>
-            <button class="vibe-btn btn-transition" data-vibe="date" style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border-radius:12px;padding:12px;font-size:11px;font-weight:500;cursor:pointer"><i data-lucide="wine" style="width:14px;height:14px"></i>浪漫</button>
-            <button class="vibe-btn btn-transition" data-vibe="party" style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border-radius:12px;padding:12px;font-size:11px;font-weight:500;cursor:pointer"><i data-lucide="glass-water" style="width:14px;height:14px"></i>歡聚</button>
-            <button class="vibe-btn btn-transition" data-vibe="work" style="display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.05);color:rgba(255,255,255,.5);border-radius:12px;padding:12px;font-size:11px;font-weight:500;cursor:pointer"><i data-lucide="laptop-2" style="width:14px;height:14px"></i>靜心</button>
-        </div>
+  <!-- Vibe -->
+  <div style="margin-bottom:32px">
+    <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">✨ Vibe</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <button class="vibe-btn" data-vibe="casual" onclick="setVibe(this)">☕ 輕鬆</button>
+      <button class="vibe-btn" data-vibe="date" onclick="setVibe(this)">🍷 浪漫</button>
+      <button class="vibe-btn" data-vibe="party" onclick="setVibe(this)">🥂 歡聚</button>
+      <button class="vibe-btn" data-vibe="work" onclick="setVibe(this)">💻 靜心</button>
     </div>
+  </div>
 
-    <button id="find-btn" style="width:100%;background:white;color:black;font-family:'Noto Serif TC',serif;font-weight:700;font-size:14px;letter-spacing:.2em;padding:16px;border-radius:14px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;text-transform:uppercase">
-        <i data-lucide="sparkles" style="width:16px;height:16px"></i> AI 智慧探索 <i data-lucide="wand" style="width:14px;height:14px;opacity:.6"></i>
-    </button>
-    <p id="ai-error-msg" style="display:none;text-align:center;color:#f87171;font-size:11px;margin-top:12px;letter-spacing:.1em"></p>
+  <button id="find-btn" class="btn btn-primary" onclick="doSearch()">✨ AI 智慧探索</button>
+  <div id="err-msg" style="display:none;text-align:center;color:#f87171;font-size:11px;margin-top:10px;line-height:1.5"></div>
 </div>
 
-<!-- 載入畫面 -->
-<div id="step-loading" style="display:none;position:absolute;inset:0;background:rgba(10,10,10,.9);backdrop-filter:blur(20px);flex-direction:column;align-items:center;justify-content:center;z-index:20;text-align:center;padding:24px">
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-    <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,.1);border-top-color:#D4AF37;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px"></div>
-    <p id="loading-text" class="serif" style="color:white;letter-spacing:.2em;font-size:14px;text-transform:uppercase">AI 正在為您搜尋...</p>
+<!-- Results Screen -->
+<div id="screen-results" class="screen">
+  <!-- View toggle -->
+  <div style="display:flex;background:rgba(255,255,255,.05);padding:4px;border-radius:24px;margin-bottom:14px;position:relative">
+    <div id="toggle-bg" style="position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);background:white;border-radius:20px;transition:transform .3s;pointer-events:none"></div>
+    <button onclick="showList()" id="btn-list" style="flex:1;padding:9px;font-size:10px;font-weight:700;letter-spacing:.18em;border:none;background:transparent;color:black;border-radius:20px;cursor:pointer;position:relative;z-index:1;font-family:'Noto Sans TC',sans-serif">LIST</button>
+    <button onclick="showMap()" id="btn-map" style="flex:1;padding:9px;font-size:10px;font-weight:700;letter-spacing:.18em;border:none;background:transparent;color:rgba(255,255,255,.5);border-radius:20px;cursor:pointer;position:relative;z-index:1;font-family:'Noto Sans TC',sans-serif">MAP</button>
+  </div>
+  <button class="btn btn-gold-outline" onclick="doRoulette()" style="margin-bottom:18px">🎲 Random Pick</button>
+  <div id="list-view"></div>
+  <div id="map-view" style="display:none;height:50vh;background:#0d0d0d;border-radius:16px;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden">
+    <div style="position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.04) 1px,transparent 1px);background-size:22px 22px"></div>
+    <div id="map-pins"></div>
+  </div>
 </div>
 
-<!-- 結果畫面 -->
-<div id="step-results" style="display:none;padding:20px 20px 140px;max-width:480px;margin:0 auto">
-    <!-- List/Map toggle -->
-    <div style="display:flex;background:rgba(255,255,255,.05);padding:4px;border-radius:24px;border:1px solid rgba(255,255,255,.08);margin-bottom:16px;position:relative">
-        <div id="view-toggle-bg" style="position:absolute;top:4px;left:4px;height:calc(100% - 8px);width:calc(50% - 4px);background:white;border-radius:20px;transition:transform .3s"></div>
-        <button id="view-list-btn" style="flex:1;padding:10px;font-size:10px;font-weight:700;letter-spacing:.2em;border-radius:20px;border:none;background:transparent;color:black;cursor:pointer;position:relative;z-index:1;text-transform:uppercase">List</button>
-        <button id="view-map-btn" style="flex:1;padding:10px;font-size:10px;font-weight:700;letter-spacing:.2em;border-radius:20px;border:none;background:transparent;color:rgba(255,255,255,.5);cursor:pointer;position:relative;z-index:1;text-transform:uppercase">Map</button>
-    </div>
-    <button id="roulette-btn" style="width:100%;background:transparent;border:1px solid rgba(212,175,55,.4);color:#D4AF37;font-family:'Noto Serif TC',serif;font-size:12px;letter-spacing:.15em;padding:14px;border-radius:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;text-transform:uppercase;margin-bottom:20px">
-        <i data-lucide="dices" style="width:16px;height:16px"></i> Random Pick
-    </button>
-    <div id="restaurant-list-view"></div>
-    <div id="restaurant-map-view" style="display:none;height:50vh;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:#0a0a0a;position:relative">
-        <div id="map-pins-container" style="position:absolute;inset:0"></div>
-    </div>
-</div>
-</main>
+</div><!-- end scroll-area -->
 
-<!-- 底部按鈕 -->
-<div id="bottom-actions" style="display:none;position:fixed;bottom:0;width:100%;padding:16px 20px 28px;background:rgba(10,10,10,.85);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);z-index:15;box-sizing:border-box">
-    <div style="display:flex;gap:10px;max-width:480px;margin:0 auto">
-        <button id="back-to-setup" style="padding:14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;color:rgba(255,255,255,.6);cursor:pointer"><i data-lucide="sliders-horizontal" style="width:20px;height:20px;display:block"></i></button>
-        <button id="refresh-btn" style="flex:1;background:rgba(255,255,255,.05);color:white;font-family:'Noto Serif TC',serif;font-size:11px;letter-spacing:.15em;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.1);cursor:pointer;text-transform:uppercase"><i data-lucide="shuffle" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i>Shuffle</button>
-        <button id="share-btn" style="flex:1;background:white;color:black;font-family:'Noto Serif TC',serif;font-weight:700;font-size:11px;letter-spacing:.15em;padding:14px;border-radius:14px;border:none;cursor:pointer;text-transform:uppercase"><i data-lucide="share-2" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px"></i>Share</button>
-    </div>
+<!-- Bottom bar -->
+<div id="bottom-bar">
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-small" onclick="goSetup()" style="padding:13px 14px">⚙️</button>
+    <button class="btn btn-small" onclick="doSearch()" style="flex:1;letter-spacing:.12em">🔀 Shuffle</button>
+    <button class="btn btn-primary" onclick="doShare()" style="flex:1;padding:13px;font-size:11px">↑ Share</button>
+  </div>
 </div>
 
-<!-- 轉盤 Modal -->
-<div id="roulette-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:50;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(20px)">
-    <div style="background:#121212;width:100%;max-width:320px;border-radius:24px;padding:32px;text-align:center;border:1px solid rgba(255,255,255,.1)">
-        <div style="width:40px;height:40px;border-radius:50%;border:1px solid rgba(212,175,55,.3);background:rgba(212,175,55,.05);display:flex;align-items:center;justify-content:center;margin:0 auto 24px">
-            <i data-lucide="concierge-bell" style="width:20px;height:20px;color:#D4AF37"></i>
-        </div>
-        <div style="height:72px;display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(255,255,255,.1);border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:24px">
-            <div id="slot-text" class="serif" style="font-size:18px;font-weight:700;color:white;padding:0 16px;letter-spacing:.1em">...</div>
-        </div>
-        <button id="close-roulette" style="display:none;width:100%;background:white;color:black;font-family:'Noto Serif TC',serif;font-weight:700;letter-spacing:.2em;padding:14px;border-radius:14px;border:none;cursor:pointer;text-transform:uppercase;font-size:12px">Accept</button>
-    </div>
+</div><!-- end app -->
+
+<!-- Loading overlay -->
+<div id="loading-screen">
+  <div class="spinner" style="margin-bottom:18px"></div>
+  <p id="loading-text" class="serif" style="color:white;font-size:13px;letter-spacing:.18em;text-transform:uppercase;margin:0">AI 正在搜尋...</p>
 </div>
 
-<!-- 詳細 Modal -->
-<div id="detail-modal" style="position:fixed;inset:0;z-index:60;background:#0a0a0a;overflow-y:auto;transform:translateY(100%);transition:transform .5s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;pointer-events:none" class="no-scrollbar">
-    <div style="position:relative;width:100%;height:35vh;flex-shrink:0">
-        <img id="detail-img" src="" style="width:100%;height:100%;object-fit:cover;opacity:.85">
-        <div style="position:absolute;inset:0;background:linear-gradient(to top,#0a0a0a,transparent)"></div>
-        <button id="close-detail-btn" style="position:absolute;top:20px;right:20px;padding:10px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.1);border-radius:50%;color:white;cursor:pointer"><i data-lucide="x" style="width:18px;height:18px;display:block"></i></button>
+<!-- Roulette overlay -->
+<div id="roulette-overlay">
+  <div style="background:#111;width:100%;max-width:300px;border-radius:24px;padding:28px;text-align:center;border:1px solid rgba(255,255,255,.1)">
+    <div style="font-size:28px;margin-bottom:16px">🎰</div>
+    <div style="height:64px;display:flex;align-items:center;justify-content:center;border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:20px">
+      <div id="slot-name" class="serif" style="font-size:17px;font-weight:700;color:white;padding:0 12px;letter-spacing:.08em">...</div>
     </div>
-    <div style="flex:1;padding:0 24px 48px;margin-top:-32px;position:relative;z-index:1;max-width:480px;width:100%;box-sizing:border-box;margin-left:auto;margin-right:auto">
-        <h2 id="detail-name" class="serif" style="font-size:24px;font-weight:700;color:white;letter-spacing:.15em;margin:0 0 12px"></h2>
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
-            <div style="display:flex;align-items:center;gap:6px;background:rgba(212,175,55,.1);border:1px solid rgba(212,175,55,.3);padding:4px 12px;border-radius:20px">
-                <i data-lucide="star" style="width:12px;height:12px;color:#D4AF37;fill:#D4AF37"></i>
-                <span id="detail-rating" style="font-size:12px;font-weight:700;color:#D4AF37"></span>
-            </div>
-        </div>
-        <div style="margin-bottom:24px;padding-left:14px;border-left:2px solid rgba(212,175,55,.3)">
-            <p style="font-size:10px;font-weight:500;color:rgba(255,255,255,.3);letter-spacing:.2em;text-transform:uppercase;margin:0 0 8px">About</p>
-            <p id="detail-desc" style="font-size:13px;color:rgba(255,255,255,.7);line-height:1.7;font-weight:300;margin:0"></p>
-        </div>
-        <div id="detail-dishes" style="margin-bottom:24px"></div>
-        <div id="detail-extra"></div>
-        <a id="detail-nav-btn" href="#" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:white;color:black;font-family:'Noto Serif TC',serif;font-weight:700;font-size:11px;letter-spacing:.2em;padding:16px;border-radius:14px;text-decoration:none;text-transform:uppercase;box-sizing:border-box">
-            <i data-lucide="navigation" style="width:16px;height:16px"></i> Maps Navigate
-        </a>
+    <button id="roulette-accept" class="btn btn-primary" style="display:none" onclick="acceptRoulette()">✓ 就這家！</button>
+    <button class="btn btn-small" onclick="closeRoulette()" style="width:100%;margin-top:8px;font-size:11px">取消</button>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal" class="modal">
+  <div style="position:relative;height:38vh;flex-shrink:0">
+    <img id="d-img" src="" style="width:100%;height:100%;object-fit:cover;opacity:.75" onerror="this.src='https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80'">
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,#0a0a0a 0%,transparent 55%)"></div>
+    <button onclick="closeDetail()" style="position:absolute;top:16px;right:16px;width:36px;height:36px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.15);border-radius:50%;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1">✕</button>
+  </div>
+  <div style="padding:0 20px 48px;max-width:520px;margin:-24px auto 0;position:relative;z-index:1">
+    <h2 id="d-name" class="serif" style="font-size:22px;font-weight:700;color:white;margin:0 0 10px;letter-spacing:.1em"></h2>
+    <div id="d-meta" style="display:flex;align-items:center;gap:10px;margin-bottom:20px;font-size:11px"></div>
+    <div id="d-about" style="margin-bottom:20px;padding-left:12px;border-left:2px solid rgba(212,175,55,.35)">
+      <div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:6px">About</div>
+      <p id="d-desc" style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.7;margin:0;font-weight:300"></p>
     </div>
+    <div id="d-content"></div>
+    <a id="d-nav" href="#" target="_blank" class="btn btn-primary" style="text-decoration:none;margin-top:8px">🗺 Maps Navigate</a>
+  </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+// ── State ────────────────────────────────────────────────
+var S = {
+  loc: '', locReady: false,
+  meal: 'dinner', budget: '$', guests: 2, vibe: 'casual',
+  results: [], session: []
+};
+var rouletteWinner = null;
 
-// ── DOM refs ──────────────────────────────────────────────
-var dom = {
-    stepSetup:        document.getElementById('step-setup'),
-    stepLoading:      document.getElementById('step-loading'),
-    stepResults:      document.getElementById('step-results'),
-    bottomActions:    document.getElementById('bottom-actions'),
-    findBtn:          document.getElementById('find-btn'),
-    refreshBtn:       document.getElementById('refresh-btn'),
-    backBtn:          document.getElementById('back-to-setup'),
-    shareBtn:         document.getElementById('share-btn'),
-    mainGreeting:     document.getElementById('main-greeting'),
-    subGreeting:      document.getElementById('sub-greeting'),
-    locDisplayArea:   document.getElementById('location-display-area'),
-    locInputArea:     document.getElementById('location-input-area'),
-    locInput:         document.getElementById('location-input'),
-    locDisplayText:   document.getElementById('location-display-text'),
-    autoLocatingIcon: document.getElementById('auto-locating-icon'),
-    autoLocatedIcon:  document.getElementById('auto-located-icon'),
-    reGpsBtn:         document.getElementById('re-gps-btn'),
-    locWarning:       document.getElementById('location-warning'),
-    peopleSlider:     document.getElementById('people-slider'),
-    peopleCount:      document.getElementById('people-count-display'),
-    mealBtns:         document.querySelectorAll('.meal-btn'),
-    budgetBtns:       document.querySelectorAll('.budget-btn'),
-    vibeBtns:         document.querySelectorAll('.vibe-btn'),
-    listView:         document.getElementById('restaurant-list-view'),
-    mapView:          document.getElementById('restaurant-map-view'),
-    viewListBtn:      document.getElementById('view-list-btn'),
-    viewMapBtn:       document.getElementById('view-map-btn'),
-    viewToggleBg:     document.getElementById('view-toggle-bg'),
-    rouletteBtn:      document.getElementById('roulette-btn'),
-    rouletteModal:    document.getElementById('roulette-modal'),
-    slotText:         document.getElementById('slot-text'),
-    closeRoulette:    document.getElementById('close-roulette'),
-    detailModal:      document.getElementById('detail-modal'),
-    detailImg:        document.getElementById('detail-img'),
-    detailName:       document.getElementById('detail-name'),
-    detailRating:     document.getElementById('detail-rating'),
-    detailDesc:       document.getElementById('detail-desc'),
-    detailDishes:     document.getElementById('detail-dishes'),
-    detailNavBtn:     document.getElementById('detail-nav-btn'),
-    closeDetailBtn:   document.getElementById('close-detail-btn'),
-    detailExtra:      document.getElementById('detail-extra'),
-    headerLoc:        document.getElementById('header-location'),
-    headerLocText:    document.getElementById('header-location-text'),
-    loadingText:      document.getElementById('loading-text'),
-    aiErrorMsg:       document.getElementById('ai-error-msg'),
+var GREETINGS = {
+  breakfast: ['晨光中的<br><span class="gold">美好早餐</span>。','用一頓好早餐開啟美好的一天'],
+  brunch:    ['悠閒的<br><span class="gold">週末早午餐</span>。','不急不徐，享受最美的上午時光'],
+  lunch:     ['午間的<br><span class="gold">片刻美味</span>。','充實下午的能量，從一頓好午餐開始'],
+  tea:       ['午後的<br><span class="gold">優雅時光</span>。','放慢腳步，細細品味午茶的滋味'],
+  dinner:    ['尋找<br><span class="gold">極致美味</span>。','為您的夜晚，訂製專屬菜單'],
+  latenight: ['夜深了，<br><span class="gold">覓食去</span>。','宵夜時光，尋找深夜的溫暖滋味'],
 };
 
-// ── State ─────────────────────────────────────────────────
-var state = { locationText:'', isLocationReady:false, meal:'dinner', people:2, vibe:'casual', budget:'$', currentResults:[] };
-var sessionResults = [];
-var FALLBACK_IMG = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80';
+// ── Init ─────────────────────────────────────────────────
+window.onload = function() {
+  var h = new Date().getHours();
+  var meal = h<10?'breakfast':h<12?'brunch':h<15?'lunch':h<18?'tea':h<22?'dinner':'latenight';
+  var mBtn = document.querySelector('[data-meal="'+meal+'"]');
+  if (mBtn) setMeal(mBtn);
+  var bBtn = document.querySelector('[data-budget="$"]');
+  if (bBtn) setBudget(bBtn);
+  var vBtn = document.querySelector('[data-vibe="casual"]');
+  if (vBtn) setVibe(vBtn);
+  doGPS();
 
-var timeConfig = {
-    breakfast: { greeting:'晨光中的<br><span class="gold">美好早餐</span>。', sub:'用一頓好早餐開啟美好的一天' },
-    brunch:    { greeting:'悠閒的<br><span class="gold">週末早午餐</span>。', sub:'不急不徐，享受最美的上午時光' },
-    lunch:     { greeting:'午間的<br><span class="gold">片刻美味</span>。', sub:'充實下午的能量，從一頓好午餐開始' },
-    tea:       { greeting:'午後的<br><span class="gold">優雅時光</span>。', sub:'放慢腳步，細細品味午茶的滋味' },
-    dinner:    { greeting:'尋找<br><span class="gold">極致美味</span>。', sub:'為您的夜晚，訂製專屬菜單' },
-    latenight: { greeting:'夜深了，<br><span class="gold">覓食去</span>。', sub:'宵夜時光，尋找深夜的溫暖滋味' },
+  // Location display click
+  document.getElementById('loc-display').onclick = function() {
+    var wrap = document.getElementById('loc-input-wrap');
+    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+    if (wrap.style.display === 'block') document.getElementById('loc-input').focus();
+  };
+  document.getElementById('loc-input').oninput = function() {
+    S.loc = this.value.trim();
+    S.locReady = S.loc.length > 0;
+    document.getElementById('loc-text').textContent = S.loc || '請輸入地點';
+    document.getElementById('loc-warn').style.display = 'none';
+  };
 };
 
-// ── Helpers ───────────────────────────────────────────────
-function show(el) { el.style.display = ''; }
-function hide(el) { el.style.display = 'none'; }
-function flex(el) { el.style.display = 'flex'; }
-
-function showOnly(target) {
-    hide(dom.stepSetup); hide(dom.stepLoading); hide(dom.stepResults);
-    hide(dom.bottomActions); hide(dom.headerLoc);
-    show(target);
-    if (target === dom.stepResults) {
-        flex(dom.bottomActions);
-        flex(dom.headerLoc);
-        dom.headerLocText.textContent = state.locationText;
-    }
-    if (target === dom.stepLoading) {
-        dom.stepLoading.style.display = 'flex';
-    }
-}
-
-// ── GPS ───────────────────────────────────────────────────
-function triggerAutoLocation() {
-    state.isLocationReady = false;
-    dom.autoLocatingIcon.style.display = '';
-    dom.autoLocatedIcon.style.display = 'none';
-    dom.locDisplayText.textContent = '定位中...';
-    if (!navigator.geolocation) { dom.locDisplayText.textContent = '請手動輸入地點'; dom.autoLocatingIcon.style.display = 'none'; return; }
-    navigator.geolocation.getCurrentPosition(
-        function(pos) {
-            fetch('https://nominatim.openstreetmap.org/reverse?lat='+pos.coords.latitude+'&lon='+pos.coords.longitude+'&format=json&accept-language=zh-TW')
-                .then(function(r){ return r.json(); })
-                .then(function(d){
-                    var a = d.address || {};
-                    state.locationText = (a.suburb||a.neighbourhood||a.city_district||'') + (a.city||a.town||a.county||'') || d.display_name.split(',')[0];
-                    dom.locInput.value = state.locationText;
-                    state.isLocationReady = true;
-                    dom.autoLocatingIcon.style.display = 'none';
-                    dom.autoLocatedIcon.style.display = '';
-                    dom.locDisplayText.textContent = state.locationText;
-                }).catch(function(){
-                    state.locationText = pos.coords.latitude.toFixed(3)+','+pos.coords.longitude.toFixed(3);
-                    state.isLocationReady = true;
-                    dom.autoLocatingIcon.style.display = 'none';
-                    dom.autoLocatedIcon.style.display = '';
-                    dom.locDisplayText.textContent = state.locationText;
-                });
-        },
-        function() { dom.autoLocatingIcon.style.display = 'none'; dom.locDisplayText.textContent = '無法定位，請手動輸入'; dom.locDisplayArea.click(); },
-        { enableHighAccuracy:true, timeout:10000 }
-    );
-}
-
-// ── AI ────────────────────────────────────────────────────
-async function getAIRecommendations() {
-    var mealMap = { breakfast:'早餐', brunch:'早午餐', lunch:'午餐', tea:'下午茶', dinner:'晚餐', latenight:'宵夜' };
-    var vibeMap = { casual:'輕鬆休閒', date:'浪漫約會', party:'歡聚慶祝', work:'安靜專注' };
-    var budgetMap = { '$':'平價實惠', '$$':'精緻享受', '$$$':'奢華饗宴' };
-    var prompt = '你是台灣美食專家。推薦3家在「'+state.locationText+'」真實存在的餐廳。時段：'+mealMap[state.meal]+'，預算：'+budgetMap[state.budget]+'，人數：'+state.people+'人，氣氛：'+vibeMap[state.vibe]+'。只回傳合法JSON，不加說明或markdown，JSON字串值內不可有換行或特殊控制字符。格式：{"restaurants":[{"name":"餐廳名","rating":4.5,"reviews":1000,"price":"$200-400/人","tags":["標籤"],"cuisine":"料理類型","desc":"詳細介紹50字","story":"背景故事","review":"顧客評語","mustOrder":"必點推薦","dishes":["菜1","菜2","菜3","菜4","菜5"],"hours":"營業時間","phone":"電話","address":"地址","nearbyMRT":"捷運站","parking":"停車","reservation":"訂位方式","tips":"小提示","imgKeyword":"english food keyword"}]}';
-    try {
-        var res = await fetch('https://green-queen-06f3.rh-taipei.workers.dev', {
-            method:'POST',
-            headers:{'content-type':'application/json'},
-            body:JSON.stringify({ model:'llama-3.3-70b-versatile', max_tokens:4096, messages:[{role:'user',content:prompt}] })
+// ── GPS ──────────────────────────────────────────────────
+function doGPS() {
+  S.locReady = false;
+  document.getElementById('loc-spinner').style.display = 'inline-block';
+  document.getElementById('loc-icon').style.display = 'none';
+  document.getElementById('loc-text').textContent = '定位中...';
+  if (!navigator.geolocation) { document.getElementById('loc-text').textContent = '請手動輸入地點'; document.getElementById('loc-spinner').style.display='none'; return; }
+  navigator.geolocation.getCurrentPosition(
+    function(p) {
+      fetch('https://nominatim.openstreetmap.org/reverse?lat='+p.coords.latitude+'&lon='+p.coords.longitude+'&format=json&accept-language=zh-TW')
+        .then(function(r){return r.json();})
+        .then(function(d){
+          var a=d.address||{};
+          S.loc=(a.suburb||a.neighbourhood||a.city_district||'')+(a.city||a.town||a.county||'')||d.display_name.split(',')[0];
+          S.locReady=true;
+          document.getElementById('loc-spinner').style.display='none';
+          document.getElementById('loc-icon').style.display='inline-block';
+          document.getElementById('loc-text').textContent=S.loc;
+          document.getElementById('loc-input').value=S.loc;
+          document.getElementById('loc-input-wrap').style.display='none';
+        }).catch(function(){
+          S.loc=p.coords.latitude.toFixed(3)+','+p.coords.longitude.toFixed(3);
+          S.locReady=true;
+          document.getElementById('loc-spinner').style.display='none';
+          document.getElementById('loc-icon').style.display='inline-block';
+          document.getElementById('loc-text').textContent=S.loc;
         });
-        var rawText = await res.text();
-        var data;
-        try { data = JSON.parse(rawText); } catch(e) { throw new Error('HTTP '+res.status+': '+rawText.slice(0,100)); }
-        if (data.error) throw new Error(data.error.message);
-        var txt = (data.choices[0].message.content || '');
-        var clean = txt.replace(/```json/g,'').replace(/```/g,'').trim();
-        // 移除 JSON 字串值內的非法控制字符
-        var jsonStr = clean.slice(clean.indexOf('{'), clean.lastIndexOf('}')+1);
-        if (!jsonStr) throw new Error('no JSON: '+txt.slice(0,100));
-        // 將字串值內的原始換行/tab 替換為合法跳脫字元
-        jsonStr = jsonStr.replace(/[
+    },
+    function(){ document.getElementById('loc-spinner').style.display='none'; document.getElementById('loc-text').textContent='無法定位，請手動輸入'; document.getElementById('loc-input-wrap').style.display='block'; },
+    {enableHighAccuracy:true,timeout:10000}
+  );
+}
+
+// ── Option setters ────────────────────────────────────────
+function setMeal(btn) {
+  document.querySelectorAll('.opt-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  S.meal = btn.dataset.meal;
+  var g = GREETINGS[S.meal];
+  document.getElementById('greeting').innerHTML = g[0];
+  document.getElementById('subgreeting').textContent = g[1];
+}
+function setBudget(btn) {
+  document.querySelectorAll('.budget-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  S.budget = btn.dataset.budget;
+}
+function setVibe(btn) {
+  document.querySelectorAll('.vibe-btn').forEach(function(b){b.classList.remove('on');});
+  btn.classList.add('on');
+  S.vibe = btn.dataset.vibe;
+}
+function setGuests(v) {
+  S.guests = parseInt(v);
+  document.getElementById('guest-label').textContent = v + ' 人';
+}
+
+// ── Search ────────────────────────────────────────────────
+async function doSearch() {
+  document.getElementById('err-msg').style.display = 'none';
+  if (!S.locReady || !S.loc) {
+    document.getElementById('loc-warn').style.display = 'block';
+    return;
+  }
+  showLoading('AI 正在為您搜尋...');
+  try {
+    var results = await callAI();
+    if (!results || !results.length) throw new Error('沒有取得餐廳資料');
+    S.results = results;
+    results.forEach(function(r,i){ r.id=Date.now()+i; S.session.push(r); });
+    renderResults();
+    showScreen('screen-results');
+    document.getElementById('bottom-bar').classList.add('show');
+    // Fetch Wikipedia images
+    results.forEach(function(r,i){
+      setTimeout(function(){ fetchWikiImg(r); }, i*500);
+    });
+  } catch(e) {
+    showScreen('screen-setup');
+    var msg = e.message || 'AI 搜尋失敗';
+    document.getElementById('err-msg').textContent = '錯誤：'+msg.slice(0,120);
+    document.getElementById('err-msg').style.display = 'block';
+  }
+  hideLoading();
+}
+
+async function callAI() {
+  var mealMap = {breakfast:'早餐',brunch:'早午餐',lunch:'午餐',tea:'下午茶',dinner:'晚餐',latenight:'宵夜'};
+  var vibeMap = {casual:'輕鬆休閒',date:'浪漫約會',party:'歡聚慶祝',work:'安靜專注'};
+  var budgetMap = {'$':'平價實惠','$$':'精緻享受','$$$':'奢華饗宴'};
+  var prompt = '你是台灣美食專家。推薦3家在「'+S.loc+'」真實存在的知名餐廳。時段：'+mealMap[S.meal]+'，預算：'+budgetMap[S.budget]+'，'+S.guests+'人，氣氛：'+vibeMap[S.vibe]+'。只回傳合法JSON物件，不含markdown，所有字串值不可有換行。格式：{"restaurants":[{"name":"","rating":4.5,"reviews":1000,"price":"$200-400","tags":[""],"cuisine":"","desc":"","story":"","review":"","mustOrder":"","dishes":["","","","",""],"hours":"","phone":"","address":"","nearbyMRT":"","parking":"","reservation":"","tips":"","imgKeyword":"food keyword english"}]}';
+
+  var res = await fetch('https://green-queen-06f3.rh-taipei.workers.dev', {
+    method: 'POST',
+    headers: {'content-type':'application/json'},
+    body: JSON.stringify({model:'llama-3.3-70b-versatile', max_tokens:4096, messages:[{role:'user',content:prompt}]})
+  });
+  var raw = await res.text();
+  var data = JSON.parse(raw);
+  if (data.error) throw new Error(data.error.message);
+  var txt = data.choices[0].message.content;
+  // Clean and parse JSON
+  var clean = txt.replace(/```json/g,'').replace(/```/g,'').trim();
+  // Remove control chars
+  clean = clean.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,'');
+  clean = clean.replace(/\x09/g,' ').replace(/\x0D/g,'').replace(/\x0A/g,' ');
+  // Fix trailing commas
+  clean = clean.replace(/,(\s*[}\]])/g,'$1');
+  var s = clean.indexOf('{'), e = clean.lastIndexOf('}');
+  if (s<0) throw new Error('回應格式錯誤');
+  var parsed = JSON.parse(clean.slice(s,e+1));
+  return parsed.restaurants || [];
+}
+
+// ── Wikipedia image ───────────────────────────────────────
+function fetchWikiImg(r) {
+  var FALLBACK = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80';
+  fetch('https://zh.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(r.name)+'&prop=pageimages&format=json&pithumbsize=600&origin=*')
+    .then(function(res){return res.json();})
+    .then(function(d){
+      var pages=d.query.pages, page=pages[Object.keys(pages)[0]];
+      if (page&&page.thumbnail) { r.img=page.thumbnail.source; updateCardImg(r); }
+      else return fetch('https://en.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(r.name)+'&prop=pageimages&format=json&pithumbsize=600&origin=*')
+        .then(function(r2){return r2.json();})
+        .then(function(d2){
+          var p=d2.query.pages[Object.keys(d2.query.pages)[0]];
+          if(p&&p.thumbnail){r.img=p.thumbnail.source;updateCardImg(r);}
+        });
+    }).catch(function(){});
+}
+function updateCardImg(r) {
+  var img = document.querySelector('[data-rid="'+r.id+'"] .card-img');
+  if (img) img.src = r.img;
+}
+
+// ── Render ────────────────────────────────────────────────
+var FALLBACK_IMG = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80';
+var FOOD_IMGS = [
+  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80',
+  'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&q=80',
+  'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&q=80',
+];
+
+function renderResults() {
+  var lv = document.getElementById('list-view');
+  lv.innerHTML = S.results.map(function(r,i) {
+    r.img = r.img || FOOD_IMGS[i%FOOD_IMGS.length];
+    var tags = (r.tags||[]).map(function(t){return '<span style="padding:2px 8px;border:1px solid rgba(212,175,55,.3);border-radius:20px;font-size:9px;color:rgba(212,175,55,.75)">'+t+'</span>';}).join('');
+    var dishes = (r.dishes||[]).slice(0,3).map(function(d){return '<span style="padding:3px 8px;background:rgba(255,255,255,.05);border-radius:6px;font-size:10px;color:rgba(255,255,255,.5)">'+d+'</span>';}).join('');
+    return '<div class="card" data-rid="'+r.id+'" onclick="openDetail('+r.id+')">'
+      +'<div style="position:relative;height:145px">'
+      +'<img class="card-img" src="'+r.img+'" style="width:100%;height:100%;object-fit:cover;opacity:.7" onerror="this.src=\''+FALLBACK_IMG+'\'">'
+      +'<div style="position:absolute;inset:0;background:linear-gradient(to top,#111 0%,transparent 55%)"></div>'
+      +'<div style="position:absolute;top:8px;left:10px;display:flex;gap:4px;flex-wrap:wrap">'+tags+'</div>'
+      +'<a href="https://maps.google.com/?q='+encodeURIComponent(r.name+' '+(r.address||''))+'" target="_blank" onclick="event.stopPropagation()" style="position:absolute;top:8px;right:8px;width:30px;height:30px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;text-decoration:none">🗺</a>'
+      +'<div style="position:absolute;bottom:8px;left:10px;right:40px">'
+      +'<div class="serif" style="font-size:15px;font-weight:700;color:white;margin-bottom:3px">'+r.name+'</div>'
+      +'<div style="display:flex;gap:10px;font-size:10px;color:rgba(255,255,255,.5)"><span style="color:#D4AF37;font-weight:700">★ '+r.rating+'</span><span>'+(r.reviews||0).toLocaleString()+' 評</span><span>'+(r.price||'')+'</span></div>'
+      +'</div></div>'
+      +'<div style="padding:12px 14px">'
+      +'<p style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6;margin:0 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">'+(r.desc||'')+'</p>'
+      +(r.mustOrder?'<div style="padding:7px 10px;background:rgba(212,175,55,.08);border-radius:8px;border-left:2px solid rgba(212,175,55,.5);font-size:11px;color:rgba(212,175,55,.9);margin-bottom:8px">✦ '+r.mustOrder+'</div>':'')
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+dishes+'</div>'
+      +'<div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);font-size:10px;color:rgba(255,255,255,.35)">'
+      +'<span>'+(r.hours?'🕐 '+r.hours.split('，')[0]:'')+'</span>'
+      +'<span>'+(r.nearbyMRT?'🚇 '+r.nearbyMRT:'')+'</span>'
+      +'</div>'
+      +'<div style="margin-top:8px;padding:6px 8px 6px 16px;background:rgba(255,255,255,.02);border-radius:8px;position:relative"><span style="position:absolute;top:-8px;left:4px;font-size:2rem;color:rgba(212,175,55,.12);line-height:1">"</span><p style="font-size:10px;color:rgba(255,255,255,.38);font-style:italic;margin:0;line-height:1.5">「'+(r.review||'')+'」</p></div>'
+      +'</div></div>';
+  }).join('');
+
+  // Map pins
+  var mp = document.getElementById('map-pins');
+  mp.innerHTML = S.results.map(function(r){
+    var top=15+Math.random()*60, left=15+Math.random()*60;
+    return '<div onclick="openDetail('+r.id+')" style="position:absolute;top:'+top+'%;left:'+left+'%;transform:translate(-50%,-100%);cursor:pointer;display:flex;flex-direction:column;align-items:center;z-index:2">'
+      +'<div style="background:rgba(20,20,20,.85);padding:2px 8px;border-radius:4px;font-size:9px;color:white;white-space:nowrap;border:1px solid rgba(255,255,255,.12);margin-bottom:3px">'+r.name+'</div>'
+      +'<div style="width:10px;height:10px;background:#D4AF37;border-radius:50%;box-shadow:0 0 8px #D4AF37;border:2px solid #0a0a0a"></div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── Detail Modal ──────────────────────────────────────────
+function openDetail(id) {
+  var r = S.session.find(function(x){return x.id===id;});
+  if (!r) return;
+  var FIMG = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80';
+  document.getElementById('d-img').src = r.img || FIMG;
+  document.getElementById('d-name').textContent = r.name;
+  document.getElementById('d-meta').innerHTML =
+    '<span style="background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);padding:3px 10px;border-radius:20px;color:#D4AF37;font-weight:700">★ '+r.rating+'</span>'
+    +'<span style="color:rgba(255,255,255,.4)">'+(r.reviews||0).toLocaleString()+' 評論</span>'
+    +'<span style="color:rgba(255,255,255,.4)">'+(r.price||'')+'</span>';
+  document.getElementById('d-desc').textContent = r.desc || '';
+  var nav = document.getElementById('d-nav');
+  nav.href = 'https://maps.google.com/?q='+encodeURIComponent(r.name+' '+(r.address||''));
+
+  var info = [
+    r.story?'<div style="margin-bottom:18px;padding-left:12px;border-left:2px solid rgba(212,175,55,.3)"><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px">Story</div><p style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.7;margin:0;font-weight:300">'+r.story+'</p></div>':'',
+    r.mustOrder?'<div style="margin-bottom:18px;padding:10px 12px;background:rgba(212,175,55,.08);border-radius:10px;border-left:3px solid rgba(212,175,55,.6)"><div style="font-size:10px;color:#D4AF37;font-weight:600;margin-bottom:4px">✦ 必點推薦</div><div style="font-size:12px;color:rgba(212,175,55,.85)">'+r.mustOrder+'</div></div>':'',
+    '<div style="margin-bottom:18px"><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Signature Dishes</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+(r.dishes||[]).map(function(d){return '<span style="padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:11px;color:rgba(255,255,255,.65)">'+d+'</span>';}).join('')+'</div></div>',
+    '<div style="margin-bottom:18px;display:flex;flex-direction:column;gap:10px">',
+    r.hours?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">🕐</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">營業時間</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.hours+'</div></div></div>':'',
+    r.phone?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">📞</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">電話</div><a href="tel:'+r.phone+'" style="font-size:12px;color:rgba(255,255,255,.6);text-decoration:none">'+r.phone+'</a></div></div>':'',
+    r.nearbyMRT?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">🚇</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">最近捷運</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.nearbyMRT+'</div></div></div>':'',
+    r.parking?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">🅿️</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">停車</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.parking+'</div></div></div>':'',
+    r.reservation?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">📋</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">訂位</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.reservation+'</div></div></div>':'',
+    r.address?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">📍</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">地址</div><div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">'+r.address+'</div></div></div>':'',
+    '</div>',
+    r.tips?'<div style="margin-bottom:18px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.06)"><div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;margin-bottom:5px">💡 達人小提示</div><div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.6">'+r.tips+'</div></div>':'',
+    '<div style="margin-bottom:20px;position:relative;padding:7px 8px 7px 16px;background:rgba(255,255,255,.02);border-radius:8px"><span style="position:absolute;top:-8px;left:4px;font-size:2.2rem;color:rgba(212,175,55,.12);line-height:1">"</span><p style="font-size:11px;color:rgba(255,255,255,.4);font-style:italic;margin:0;line-height:1.6">「'+(r.review||'')+'」</p></div>',
+  ].join('');
+  document.getElementById('d-content').innerHTML = info;
+  document.getElementById('detail-modal').classList.add('open');
+  document.getElementById('detail-modal').scrollTop = 0;
+
+  // Try Wikipedia high-res
+  fetch('https://zh.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(r.name)+'&prop=pageimages&format=json&pithumbsize=800&origin=*')
+    .then(function(res){return res.json();})
+    .then(function(d){
+      var p=d.query.pages[Object.keys(d.query.pages)[0]];
+      if(p&&p.thumbnail) document.getElementById('d-img').src=p.thumbnail.source;
+    }).catch(function(){});
+}
+
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('open');
+}
+
+// ── Roulette ──────────────────────────────────────────────
+function doRoulette() {
+  if (!S.results.length) return;
+  document.getElementById('roulette-accept').style.display = 'none';
+  document.getElementById('slot-name').textContent = '...';
+  document.getElementById('roulette-overlay').classList.add('show');
+  var i=0, iv=setInterval(function(){
+    document.getElementById('slot-name').textContent = S.results[i%S.results.length].name;
+    i++;
+  },100);
+  setTimeout(function(){
+    clearInterval(iv);
+    rouletteWinner = S.results[Math.floor(Math.random()*S.results.length)];
+    document.getElementById('slot-name').innerHTML = '<span style="color:#D4AF37">'+rouletteWinner.name+'</span>';
+    document.getElementById('roulette-accept').style.display = 'block';
+  },1800);
+}
+function closeRoulette() { document.getElementById('roulette-overlay').classList.remove('show'); }
+function acceptRoulette() { closeRoulette(); if(rouletteWinner) openDetail(rouletteWinner.id); }
+
+// ── View toggle ───────────────────────────────────────────
+function showList() {
+  document.getElementById('list-view').style.display='block';
+  document.getElementById('map-view').style.display='none';
+  document.getElementById('toggle-bg').style.transform='translateX(0)';
+  document.getElementById('btn-list').style.color='black';
+  document.getElementById('btn-map').style.color='rgba(255,255,255,.5)';
+}
+function showMap() {
+  document.getElementById('list-view').style.display='none';
+  document.getElementById('map-view').style.display='block';
+  document.getElementById('toggle-bg').style.transform='translateX(100%)';
+  document.getElementById('btn-map').style.color='black';
+  document.getElementById('btn-list').style.color='rgba(255,255,255,.5)';
+}
+
+// ── Navigation ────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  document.getElementById('scroll-area').scrollTop = 0;
+  // update loc badge
+  if (id==='screen-results') {
+    var b=document.getElementById('loc-badge');
+    b.style.display='flex';
+    document.getElementById('loc-badge-text').textContent=S.loc;
+  } else {
+    document.getElementById('loc-badge').style.display='none';
+  }
+}
+function goSetup() {
+  showScreen('screen-setup');
+  document.getElementById('bottom-bar').classList.remove('show');
+}
+function showLoading(msg) {
+  document.getElementById('loading-text').textContent = msg||'載入中...';
+  document.getElementById('loading-screen').classList.add('show');
+}
+function hideLoading() { document.getElementById('loading-screen').classList.remove('show'); }
+
+// ── Share ─────────────────────────────────────────────────
+function doShare() {
+  if (navigator.share) navigator.share({title:'有啥好吃的?', text:'用 AI 幫你找餐廳！', url:location.href});
+}
+</script>
+</body>
+</html>
