@@ -71,7 +71,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 <header style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;position:relative;z-index:10;background:rgba(10,10,10,.8);backdrop-filter:blur(16px)">
   <h1 class="serif" style="margin:0;font-size:17px;font-weight:700;color:white;letter-spacing:.12em">🍽 有啥好吃的?</h1>
   <div style="display:flex;align-items:center;gap:8px">
-    <span style="font-size:9px;color:rgba(255,255,255,.35);font-family:monospace;font-weight:700">v5</span>
+    <span style="font-size:9px;color:rgba(255,255,255,.35);font-family:monospace;font-weight:700">v6</span>
     <span style="font-size:8px;color:rgba(255,255,255,.2);font-family:monospace">2026.04.18</span>
     <div id="loc-badge" style="display:none;align-items:center;gap:5px;padding:3px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;font-size:10px;color:rgba(255,255,255,.65)">
       📍 <span id="loc-badge-text" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
@@ -356,7 +356,7 @@ async function callAI() {
   var mealMap = {breakfast:'早餐',brunch:'早午餐',lunch:'午餐',tea:'下午茶',dinner:'晚餐',latenight:'宵夜'};
   var vibeMap = {casual:'輕鬆休閒',date:'浪漫約會',party:'歡聚慶祝',work:'安靜專注'};
   var budgetMap = {'$':'平價實惠','$$':'精緻享受','$$$':'奢華饗宴'};
-  var prompt = '你是台灣美食專家。推薦3家在「'+S.loc+'」真實存在的知名餐廳。時段：'+mealMap[S.meal]+'，預算：'+budgetMap[S.budget]+'，'+S.guests+'人，氣氛：'+vibeMap[S.vibe]+'。只回傳合法JSON物件，不含markdown，所有字串值不可有換行。格式：{"restaurants":[{"name":"","rating":4.5,"reviews":1000,"price":"$200-400","tags":[""],"cuisine":"","desc":"","story":"","review":"","mustOrder":"","dishes":["","","","",""],"hours":"","phone":"","address":"","nearbyMRT":"","parking":"","reservation":"","tips":"","imgKeyword":"food keyword english"}]}';
+  var prompt = '你是台灣美食專家。推薦5家在「'+S.loc+'」真實存在的餐廳。時段：'+mealMap[S.meal]+'，預算：'+budgetMap[S.budget]+'，'+S.guests+'人，氣氛：'+vibeMap[S.vibe]+'。只回傳JSON，不含markdown。格式：{"restaurants":[{"name":"名稱","rating":4.5,"reviews":100,"price":"$200","tags":["標籤"],"cuisine":"料理類型","desc":"一句話描述","imgKeyword":"english food keyword"}]}';
 
   var res = await fetch('https://green-queen-06f3.rh-taipei.workers.dev', {
     method: 'POST',
@@ -449,116 +449,70 @@ function renderResults() {
 }
 
 // ── Detail Modal ──────────────────────────────────────────
-function openDetail(id) {
-  var r = S.session.find(function(x){return x.id===id;});
-  if (!r) return;
+function renderDetailSkeleton(r) {
   var FIMG = 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80';
   document.getElementById('d-img').src = r.img || FIMG;
   document.getElementById('d-name').textContent = r.name;
   document.getElementById('d-meta').innerHTML =
     '<span style="background:rgba(212,175,55,.12);border:1px solid rgba(212,175,55,.3);padding:3px 10px;border-radius:20px;color:#D4AF37;font-weight:700">★ '+r.rating+'</span>'
-    +'<span style="color:rgba(255,255,255,.4)">'+(r.reviews||0).toLocaleString()+' 評論</span>'
-    +'<span style="color:rgba(255,255,255,.4)">'+(r.price||'')+'</span>';
+    +'<span style="color:rgba(255,255,255,.4)">'+(r.price||'')+'</span>'
+    +'<span style="color:rgba(255,255,255,.4)">'+r.cuisine+'</span>';
   document.getElementById('d-desc').textContent = r.desc || '';
-  var nav = document.getElementById('d-nav');
-  nav.href = 'https://maps.google.com/?q='+encodeURIComponent(r.name+' '+(r.address||''));
+  document.getElementById('d-nav').href = 'https://maps.google.com/?q='+encodeURIComponent(r.name);
+  // Skeleton loader
+  document.getElementById('d-content').innerHTML =
+    '<div id="detail-progress-wrap" style="margin-bottom:20px">'
+    +'<div style="font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px;letter-spacing:.1em">🔍 AI 正在深度挖掘資料...</div>'
+    +'<div style="background:rgba(255,255,255,.08);border-radius:4px;height:4px;overflow:hidden">'
+    +'<div id="detail-progress-bar" style="height:100%;background:linear-gradient(to right,#D4AF37,#f0d060);border-radius:4px;width:0%;transition:width .4s ease"></div>'
+    +'</div></div>'
+    +'<div style="display:flex;flex-direction:column;gap:12px">'
+    +[1,2,3].map(function(){
+      return '<div style="background:rgba(255,255,255,.04);border-radius:10px;height:60px;overflow:hidden;position:relative">'
+        +'<div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);animation:shimmer 1.5s infinite"></div>'
+        +'</div>';
+    }).join('')
+    +'</div>';
+}
 
-  var info = [
-    r.story?'<div style="margin-bottom:18px;padding-left:12px;border-left:2px solid rgba(212,175,55,.3)"><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px">Story</div><p style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.7;margin:0;font-weight:300">'+r.story+'</p></div>':'',
-    r.mustOrder?'<div style="margin-bottom:18px;padding:10px 12px;background:rgba(212,175,55,.08);border-radius:10px;border-left:3px solid rgba(212,175,55,.6)"><div style="font-size:10px;color:#D4AF37;font-weight:600;margin-bottom:4px">✦ 必點推薦</div><div style="font-size:12px;color:rgba(212,175,55,.85)">'+r.mustOrder+'</div></div>':'',
-    '<div style="margin-bottom:18px"><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.18em;text-transform:uppercase;margin-bottom:8px">Signature Dishes</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+(r.dishes||[]).map(function(d){return '<span style="padding:5px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;font-size:11px;color:rgba(255,255,255,.65)">'+d+'</span>';}).join('')+'</div></div>',
-    '<div style="margin-bottom:18px;display:flex;flex-direction:column;gap:10px">',
-    r.hours?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">🕐</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">營業時間</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.hours+'</div></div></div>':'',
-    r.phone?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">📞</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">電話</div><a href="tel:'+r.phone+'" style="font-size:12px;color:rgba(255,255,255,.6);text-decoration:none">'+r.phone+'</a></div></div>':'',
-    r.nearbyMRT?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">🚇</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">最近捷運</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.nearbyMRT+'</div></div></div>':'',
-    r.parking?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">🅿️</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">停車</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.parking+'</div></div></div>':'',
-    r.reservation?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">📋</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">訂位</div><div style="font-size:12px;color:rgba(255,255,255,.6)">'+r.reservation+'</div></div></div>':'',
-    r.address?'<div style="display:flex;gap:10px"><span style="flex-shrink:0">📍</span><div><div style="font-size:9px;color:rgba(255,255,255,.3);margin-bottom:2px">地址</div><div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.5">'+r.address+'</div></div></div>':'',
-    '</div>',
-    r.tips?'<div style="margin-bottom:18px;padding:10px 12px;background:rgba(255,255,255,.03);border-radius:10px;border:1px solid rgba(255,255,255,.06)"><div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:600;margin-bottom:5px">💡 達人小提示</div><div style="font-size:12px;color:rgba(255,255,255,.5);line-height:1.6">'+r.tips+'</div></div>':'',
-    '<div style="margin-bottom:20px;position:relative;padding:7px 8px 7px 16px;background:rgba(255,255,255,.02);border-radius:8px"><span style="position:absolute;top:-8px;left:4px;font-size:2.2rem;color:rgba(212,175,55,.12);line-height:1">"</span><p style="font-size:11px;color:rgba(255,255,255,.4);font-style:italic;margin:0;line-height:1.6">「'+(r.review||'')+'」</p></div>',
-  ].join('');
-  document.getElementById('d-content').innerHTML = info;
+async function openDetail(id) {
+  var r = S.session.find(function(x){return x.id===id;});
+  if (!r) return;
+  renderDetailSkeleton(r);
   document.getElementById('detail-modal').classList.add('open');
   document.getElementById('detail-modal').scrollTop = 0;
 
-  // Try Wikipedia high-res
-  fetch('https://zh.wikipedia.org/w/api.php?action=query&titles='+encodeURIComponent(r.name)+'&prop=pageimages&format=json&pithumbsize=800&origin=*')
-    .then(function(res){return res.json();})
-    .then(function(d){
-      var p=d.query.pages[Object.keys(d.query.pages)[0]];
-      if(p&&p.thumbnail) document.getElementById('d-img').src=p.thumbnail.source;
-    }).catch(function(){});
-}
+  // Animate progress bar
+  var bar = document.getElementById('detail-progress-bar');
+  var prog = 0;
+  var progIv = setInterval(function(){
+    prog = Math.min(prog + Math.random()*12, 85);
+    if (bar) bar.style.width = prog + '%';
+  }, 300);
 
-function closeDetail() {
-  document.getElementById('detail-modal').classList.remove('open');
-}
-
-// ── Roulette ──────────────────────────────────────────────
-function doRoulette() {
-  if (!S.results.length) return;
-  document.getElementById('roulette-accept').style.display = 'none';
-  document.getElementById('slot-name').textContent = '...';
-  document.getElementById('roulette-overlay').classList.add('show');
-  var i=0, iv=setInterval(function(){
-    document.getElementById('slot-name').textContent = S.results[i%S.results.length].name;
-    i++;
-  },100);
-  setTimeout(function(){
-    clearInterval(iv);
-    rouletteWinner = S.results[Math.floor(Math.random()*S.results.length)];
-    document.getElementById('slot-name').innerHTML = '<span style="color:#D4AF37">'+rouletteWinner.name+'</span>';
-    document.getElementById('roulette-accept').style.display = 'block';
-  },1800);
-}
-function closeRoulette() { document.getElementById('roulette-overlay').classList.remove('show'); }
-function acceptRoulette() { closeRoulette(); if(rouletteWinner) openDetail(rouletteWinner.id); }
-
-// ── View toggle ───────────────────────────────────────────
-function showList() {
-  document.getElementById('list-view').style.display='block';
-  document.getElementById('map-view').style.display='none';
-  document.getElementById('toggle-bg').style.transform='translateX(0)';
-  document.getElementById('btn-list').style.color='black';
-  document.getElementById('btn-map').style.color='rgba(255,255,255,.5)';
-}
-function showMap() {
-  document.getElementById('list-view').style.display='none';
-  document.getElementById('map-view').style.display='block';
-  document.getElementById('toggle-bg').style.transform='translateX(100%)';
-  document.getElementById('btn-map').style.color='black';
-  document.getElementById('btn-list').style.color='rgba(255,255,255,.5)';
-}
-
-// ── Navigation ────────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
-  document.getElementById(id).classList.add('active');
-  document.getElementById('scroll-area').scrollTop = 0;
-  // update loc badge
-  if (id==='screen-results') {
-    var b=document.getElementById('loc-badge');
-    b.style.display='flex';
-    document.getElementById('loc-badge-text').textContent=S.loc;
-  } else {
-    document.getElementById('loc-badge').style.display='none';
+  try {
+    var detail = await callAIDetail(r.name, r.cuisine);
+    // Merge detail into r
+    Object.assign(r, detail);
+    clearInterval(progIv);
+    if (bar) bar.style.width = '100%';
+    setTimeout(function(){ renderDetailContent(r); }, 300);
+  } catch(e) {
+    clearInterval(progIv);
+    renderDetailContent(r);
   }
 }
-function goSetup() {
-  showScreen('screen-setup');
-  document.getElementById('bottom-bar').classList.remove('show');
-}
-function showLoading(msg) {
-  document.getElementById('loading-text').textContent = msg||'載入中...';
-  document.getElementById('loading-screen').classList.add('show');
-}
-function hideLoading() { document.getElementById('loading-screen').classList.remove('show'); }
 
-// ── Share ─────────────────────────────────────────────────
-function doShare() {
-  if (navigator.share) navigator.share({title:'有啥好吃的?', text:'用 AI 幫你找餐廳！', url:location.href});
-}
-</script>
-</body>
-</html>
+async function callAIDetail(name, cuisine) {
+  var prompt = '請提供台灣餐廳「'+name+'」的詳細資訊。只回傳JSON，不含markdown，字串值不含換行。格式：{"story":"背景故事30字","review":"顧客評語","mustOrder":"必點推薦理由","dishes":["菜1","菜2","菜3","菜4","菜5"],"hours":"營業時間","phone":"電話","address":"詳細地址","nearbyMRT":"最近捷運站","parking":"停車資訊","reservation":"訂位方式","tips":"達人小提示","imgUrl":"如果你知道該餐廳官方或Google圖片的直連URL請填入否則留空"}';
+  var res = await fetch('https://green-queen-06f3.rh-taipei.workers.dev', {
+    method:'POST',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+  });
+  var raw = await res.text();
+  var data = JSON.parse(raw);
+  if (data.error) throw new Error(data.error.message);
+  var txt = data.choices[0].message.content;
+  var clean = txt.replace(/```json/g,'').replace(/```/g,'').trim();
+  clean = clean.replace(/[
