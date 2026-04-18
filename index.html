@@ -71,7 +71,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;heigh
 <header style="padding:12px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);flex-shrink:0;position:relative;z-index:10;background:rgba(10,10,10,.8);backdrop-filter:blur(16px)">
   <h1 class="serif" style="margin:0;font-size:17px;font-weight:700;color:white;letter-spacing:.12em">🍽 有啥好吃的?</h1>
   <div style="display:flex;align-items:center;gap:8px">
-    <span style="font-size:9px;color:rgba(255,255,255,.35);font-family:monospace;font-weight:700">v6</span>
+    <span style="font-size:9px;color:rgba(255,255,255,.35);font-family:monospace;font-weight:700">v7</span>
     <span style="font-size:8px;color:rgba(255,255,255,.2);font-family:monospace">2026.04.18</span>
     <div id="loc-badge" style="display:none;align-items:center;gap:5px;padding:3px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;font-size:10px;color:rgba(255,255,255,.65)">
       📍 <span id="loc-badge-text" style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
@@ -356,12 +356,12 @@ async function callAI() {
   var mealMap = {breakfast:'早餐',brunch:'早午餐',lunch:'午餐',tea:'下午茶',dinner:'晚餐',latenight:'宵夜'};
   var vibeMap = {casual:'輕鬆休閒',date:'浪漫約會',party:'歡聚慶祝',work:'安靜專注'};
   var budgetMap = {'$':'平價實惠','$$':'精緻享受','$$$':'奢華饗宴'};
-  var prompt = '你是台灣美食專家。推薦5家在「'+S.loc+'」真實存在的餐廳。時段：'+mealMap[S.meal]+'，預算：'+budgetMap[S.budget]+'，'+S.guests+'人，氣氛：'+vibeMap[S.vibe]+'。只回傳JSON，不含markdown。格式：{"restaurants":[{"name":"名稱","rating":4.5,"reviews":100,"price":"$200","tags":["標籤"],"cuisine":"料理類型","desc":"一句話描述","imgKeyword":"english food keyword"}]}';
+  var prompt = '請用網路搜尋，找出「'+S.loc+'」地區真實存在且目前營業中的餐廳，推薦5家符合以下條件的店家：時段：'+mealMap[S.meal]+'，預算：'+budgetMap[S.budget]+'，'+S.guests+'人，氣氛：'+vibeMap[S.vibe]+'。重要：只推薦你搜尋後確認真實存在的餐廳，如果不確定某家餐廳是否存在請不要推薦。只回傳JSON，不含markdown，字串值不含換行。格式：{"restaurants":[{"name":"真實餐廳名稱","rating":4.5,"reviews":100,"price":"$200","tags":["標籤"],"cuisine":"料理類型","desc":"一句話描述","imgKeyword":"english food keyword"}]}';
 
   var res = await fetch('https://green-queen-06f3.rh-taipei.workers.dev', {
     method: 'POST',
     headers: {'content-type':'application/json'},
-    body: JSON.stringify({model:'llama-3.3-70b-versatile', max_tokens:4096, messages:[{role:'user',content:prompt}]})
+    body: JSON.stringify({model:'compound-beta', max_tokens:2048, messages:[{role:'user',content:prompt}]})
   });
   var raw = await res.text();
   var data = JSON.parse(raw);
@@ -504,11 +504,11 @@ async function openDetail(id) {
 }
 
 async function callAIDetail(name, cuisine) {
-  var prompt = '請提供台灣餐廳「'+name+'」的詳細資訊。只回傳JSON，不含markdown，字串值不含換行。格式：{"story":"背景故事30字","review":"顧客評語","mustOrder":"必點推薦理由","dishes":["菜1","菜2","菜3","菜4","菜5"],"hours":"營業時間","phone":"電話","address":"詳細地址","nearbyMRT":"最近捷運站","parking":"停車資訊","reservation":"訂位方式","tips":"達人小提示","imgUrl":"如果你知道該餐廳官方或Google圖片的直連URL請填入否則留空"}';
+  var prompt = '請用網路搜尋「'+name+'」這家位於台灣的餐廳，取得其真實資訊。只回傳JSON，不含markdown，字串值不含換行。格式：{"story":"餐廳背景故事","review":"真實顧客評語","mustOrder":"必點推薦理由","dishes":["招牌菜1","招牌菜2","招牌菜3","招牌菜4","招牌菜5"],"hours":"真實營業時間含公休","phone":"真實電話號碼","address":"真實詳細地址","nearbyMRT":"最近捷運站","parking":"停車資訊","reservation":"訂位方式","tips":"達人小提示","imgUrl":"餐廳官方網站或Google Maps圖片URL若無則留空"}';
   var res = await fetch('https://green-queen-06f3.rh-taipei.workers.dev', {
     method:'POST',
     headers:{'content-type':'application/json'},
-    body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:1500,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'compound-beta',max_tokens:1500,messages:[{role:'user',content:prompt}]})
   });
   var raw = await res.text();
   var data = JSON.parse(raw);
